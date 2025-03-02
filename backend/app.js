@@ -1,0 +1,77 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors({
+  credentials : true,
+  origin : ['http://localhost:3000' , 'http://localhost:8080' , 'http://localhost:4200']
+}));
+app.use(bodyParser.json());
+app.use(cookieParser());
+
+//cors and middleware 
+app.use(function(req,res,next){
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
+  res.header("Access-Control-Allow-Headers", "auth-token","Origin, X-Requested-With, Content-Type, Accept");
+  next();
+})
+// Connect to MongoDB
+const uri = "mongodb+srv://bryantpirih:1234@clusterta.xcndkot.mongodb.net/?retryWrites=true&w=majority";
+mongoose.connect(uri, { 
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => {
+  console.log("MongoDB Connected")
+})
+.catch(err=> console.log(err))
+
+//routes
+const WarehouseRoutes = require('./routes/Warehouse.js')
+app.use('/warehouse/',WarehouseRoutes)
+
+const WorkerRoutes = require('./routes/Worker.js')
+app.use('/worker/',WorkerRoutes)
+
+const ProductCategoriesRoutes = require('./routes/ProductCategories.js')
+app.use('/productCategories/',ProductCategoriesRoutes)
+
+const Users = require('./routes/User.js')
+app.use('/user/',Users)
+
+const Products = require('./routes/Product.js')
+app.use('/product/',Products)
+
+const Carts = require('./routes/Cart.js')
+app.use('/cart/',Carts)
+
+const Wishtlists = require('./routes/Wishlist.js')
+app.use('/wishlist/',Wishtlists)
+
+const Addresses = require('./routes/Address.js')
+app.use('/address/',Addresses)
+
+const Discounts = require('./routes/Discount.js')
+app.use('/discount/',Discounts)
+
+const Orders = require('./routes/Order.js')
+app.use('/order/',Orders)
+
+const Moves = require('./routes/Move.js')
+app.use('/move/',Moves)
+
+const rajaOngkir = require('./API/rajaongkir.js')
+app.use('/rajaongkir/',rajaOngkir)
+
+const midtrans = require('./API/midtrans.js')
+app.use('/midtrans/',midtrans)
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
