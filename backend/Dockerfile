@@ -1,18 +1,16 @@
-# Use official Node image
+# backend/Dockerfile
 FROM node:18
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package*.json ./
+# Copy only backend's package.json
+COPY ./backend/package*.json ./
+
 RUN npm install
 
-# Copy all backend files
-COPY . .
+# Copy rest of the backend code
+COPY ./backend/. .
 
-# Expose port (Railway uses this internally)
 EXPOSE 3000
 
-# Start the app
 CMD ["npm", "start"]
