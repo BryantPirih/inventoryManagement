@@ -21,11 +21,11 @@ jobs:
       run: |
         export VERSION=`node -p "require('./backend/package.json').version"`-dev
         export NAME=`node -p "require('./backend/package.json').name"`
-        docker build . --file backend/Dockerfile --tag $NAME:$VERSION
+        docker build . --file backend/Dockerfile --tag ghcr.io/${{ secrets.USERNAME}}/$NAME:$VERSION
         docker push ghcr.io/bryantpirih/$NAME:$VERSION
         export VERSION_FE=`node -p "require('./frontend/package.json').version"`-dev
         export NAME_FE=`node -p "require('./frontend/package.json').name"`
-        docker build . --file frontend/Dockerfile --tag $NAME_FE:$VERSION_FE
+        docker build . --file frontend/Dockerfile --tag ghcr.io/${{ secrets.USERNAME}}/$NAME_FE:$VERSION_FE
         docker push ghcr.io/bryantpirih/$NAME_FE:$VERSION_FE
     - name: docker logout ghcr.io
       run: |
