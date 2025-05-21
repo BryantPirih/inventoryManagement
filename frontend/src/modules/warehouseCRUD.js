@@ -11,7 +11,7 @@ const getWarehouse =() =>{
 
     const getAllWarehouse = async () =>{
         try {
-            await fetch("http://localhost:3000/warehouse/")
+            await fetch("https://bmp-inv-be.zenbytes.id/warehouse/")
             .then(res=> res.json())
             .then(data=> {
                 state.warehouse = data
@@ -35,7 +35,7 @@ const getWarehouse =() =>{
                 city: state.newCity
             })
         }
-        fetch("http://localhost:3000/warehouse/new",
+        fetch("https://bmp-inv-be.zenbytes.id/warehouse/new",
         request
         )
     }

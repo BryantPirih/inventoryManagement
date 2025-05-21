@@ -18,7 +18,7 @@ const getAddress = () => {
   // Fetch all addresses for a user
   const getAllAddress = async (username) => {
     try {
-      const res = await fetch(`http://localhost:3000/address/all/${username}`)
+      const res = await fetch(`https://bmp-inv-be.zenbytes.id/address/all/${username}`)
       const data = await res.json()
       stateAddress.address = data.data // Update state with all addresses
     } catch (error) {
@@ -29,7 +29,7 @@ const getAddress = () => {
   // Fetch only the default address for a user
   const getOneAddress = async (username) => {
     try {
-      const res = await fetch(`http://localhost:3000/address/get/${username}`)
+      const res = await fetch(`https://bmp-inv-be.zenbytes.id/address/get/${username}`)
       const data = await res.json()
       stateAddress.address = data.data // Update state with the default address
     } catch (error) {
@@ -40,7 +40,7 @@ const getAddress = () => {
   // Create a new address
   const newAddress = async () => {
     try {
-      await fetch("http://localhost:3000/address/new", {
+      await fetch("https://bmp-inv-be.zenbytes.id/address/new", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -67,7 +67,7 @@ const getAddress = () => {
   // Update the default address
   const updateAddress = async (id, updatedData) => {
     try {
-      await fetch(`http://localhost:3000/address/updateDefault/${id}`, {
+      await fetch(`https://bmp-inv-be.zenbytes.id/address/updateDefault/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"

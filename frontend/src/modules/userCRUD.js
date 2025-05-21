@@ -16,7 +16,7 @@ const getUsers = () => {
   // Get all users
   const getAllUser = async () => {
     try {
-      const res = await fetch("http://localhost:3000/user/");
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/user/");
       const data = await res.json();
       stateUser.user = data;
     } catch (error) {
@@ -40,13 +40,13 @@ const getUsers = () => {
         password: stateUser.newPassword,
       }),
     };
-    fetch("http://localhost:3000/user/new", request);
+    fetch("https://bmp-inv-be.zenbytes.id/user/new", request);
   };
 
   // Get current logged-in user
   const getCurrentUser = async (username) => {
     try {
-      const res = await fetch("http://localhost:3000/user/");
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/user/");
       const data = await res.json();
       const user = data.find(u => u.username === username);
       if (user) {
@@ -60,7 +60,7 @@ const getUsers = () => {
   // Update profile for logged-in user
   const updateCurrentUser = async (username) => {
     try {
-      const res = await fetch(`http://localhost:3000/user/update/${username}`, {
+      const res = await fetch(`https://bmp-inv-be.zenbytes.id/user/update/${username}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

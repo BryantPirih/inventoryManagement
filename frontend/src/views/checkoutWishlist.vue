@@ -199,7 +199,7 @@ export default {
           totalPayment: totalPembayaran.value
         };
 
-        const orderResult = await axios.post("http://localhost:3000/order/new", orderPayload, {
+        const orderResult = await axios.post("https://bmp-inv-be.zenbytes.id/order/new", orderPayload, {
           headers: { 'Content-type': 'application/json' },
           credentials: 'include'
         });
@@ -216,7 +216,7 @@ export default {
           }
         } else {
           // Midtrans Online Payment
-          const midtransResponse = await axios.post('http://localhost:3000/midtrans/createTransaction', {
+          const midtransResponse = await axios.post('https://bmp-inv-be.zenbytes.id/midtrans/createTransaction', {
             order_id: orderResult.data.order.id,
             gross_amount: orderResult.data.order.totalPayment,
             customer_details: {
@@ -229,7 +229,7 @@ export default {
           const token = midtransResponse.data.token;
           window.snap.pay(token, {
             onSuccess: async (result) => {
-              await axios.put(`http://localhost:3000/order/updateStatusAfterPayment/${orderResult.data.order.id}`);
+              await axios.put(`https://bmp-inv-be.zenbytes.id/order/updateStatusAfterPayment/${orderResult.data.order.id}`);
               sessionStorage.removeItem('discountCode');
               await wishlistCRUD().deleteWishlist(username);  
               console.log('Payment Success:', result);

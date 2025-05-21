@@ -20,7 +20,7 @@ const doLogin =() =>{
                 password: stateLogin.passwordInput ,
             })
         }
-        fetch("http://localhost:3000/user/login",
+        fetch("https://bmp-inv-be.zenbytes.id/user/login",
         request
         )
     }

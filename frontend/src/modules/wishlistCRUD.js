@@ -13,7 +13,7 @@ const getWishlist = () => {
   // Fetch all wishlists (admin or user)
   const getAllWishlist = async () => {
     try {
-      const res = await fetch("http://localhost:3000/wishlist/");
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/wishlist/");
       const data = await res.json();
       stateWishlist.allWishlists = data; // Updated to store all wishlists
     } catch (error) {
@@ -24,7 +24,7 @@ const getWishlist = () => {
   // Fetch one user's wishlist
   const getOneWishlist = async (username) => {
     try {
-      const res = await fetch(`http://localhost:3000/wishlist/get/${username}`);
+      const res = await fetch(`https://bmp-inv-be.zenbytes.id/wishlist/get/${username}`);
       const data = await res.json();
       stateWishlist.wishlist = data.data; // Updated to store fetched wishlist
     } catch (error) {
@@ -50,7 +50,7 @@ const getWishlist = () => {
       })
     }
     try {
-      const res = await fetch("http://localhost:3000/wishlist/new", request);
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/wishlist/new", request);
       const data = await res.json();
       console.log(data.message); // Display message upon successful creation
     } catch (error) {
@@ -68,7 +68,7 @@ const getWishlist = () => {
         },
         body: JSON.stringify(updatedData)
       };
-      await fetch(`http://localhost:3000/wishlist/update/${id}`, request);
+      await fetch(`https://bmp-inv-be.zenbytes.id/wishlist/update/${id}`, request);
     } catch (error) {
       console.log(error);
     }
@@ -77,7 +77,7 @@ const getWishlist = () => {
     // Delete wishlist for a specific user
     const deleteWishlist = async (username) => {
       try {
-        await fetch(`http://localhost:3000/wishlist/delete/${username}`, {
+        await fetch(`https://bmp-inv-be.zenbytes.id/wishlist/delete/${username}`, {
           method: "DELETE"
         });
       } catch (error) {

@@ -29,7 +29,7 @@ const getAPI =() =>{
         };
 
         try {
-            const response = await fetch("http://localhost:3000/rajaongkir/cekOngkir", request);
+            const response = await fetch("https://bmp-inv-be.zenbytes.id/rajaongkir/cekOngkir", request);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             stateAPI.api = data;
@@ -48,7 +48,7 @@ const getAPI =() =>{
             },
         };
         try {
-            const response = await fetch("http://localhost:3000/rajaongkir/allProvince", request);
+            const response = await fetch("https://bmp-inv-be.zenbytes.id/rajaongkir/allProvince", request);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -72,7 +72,7 @@ const getAPI =() =>{
             },
         };
         try {
-            const response = await fetch("http://localhost:3000/rajaongkir/allCity", request);
+            const response = await fetch("https://bmp-inv-be.zenbytes.id/rajaongkir/allCity", request);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

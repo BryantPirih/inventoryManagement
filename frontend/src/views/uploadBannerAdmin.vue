@@ -52,7 +52,7 @@ export default {
         const formData = new FormData();
         formData.append("banner", imageFile.value);
 
-        const res = await fetch("http://localhost:3000/banner/upload", {
+        const res = await fetch("https://bmp-inv-be.zenbytes.id/banner/upload", {
           method: "POST",
           body: formData
         });

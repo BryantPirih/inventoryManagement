@@ -16,7 +16,7 @@ const submitReturnRequest = async ({ order, productId, reason, file }) => {
     formData.append("reason", reason);
     formData.append("file", file);
 
-    await axios.post("http://localhost:3000/returnRequest/new", formData);
+    await axios.post("https://bmp-inv-be.zenbytes.id/returnRequest/new", formData);
     return true;
   } catch (err) {
     console.error("❌ Gagal mengirim return request:", err.response?.data || err.message);
@@ -27,7 +27,7 @@ const submitReturnRequest = async ({ order, productId, reason, file }) => {
 // 📦 2. Fetch return request by ID (admin detail view)
 const getReturnRequestById = async (id) => {
   try {
-    const res = await axios.get(`http://localhost:3000/returnRequest/get/${id}`);
+    const res = await axios.get(`https://bmp-inv-be.zenbytes.id/returnRequest/get/${id}`);
     return res.data;
   } catch (err) {
     console.error("❌ Gagal memuat permintaan retur:", err.response?.data || err.message);
@@ -38,7 +38,7 @@ const getReturnRequestById = async (id) => {
 // ✅ 3. Update return request status + optional adminNote
 const updateReturnRequestStatus = async (id, { status, adminNote }) => {
   try {
-    const res = await axios.put(`http://localhost:3000/returnRequest/status/${id}`, {
+    const res = await axios.put(`https://bmp-inv-be.zenbytes.id/returnRequest/status/${id}`, {
       status,
       adminNote,
     });
@@ -52,7 +52,7 @@ const updateReturnRequestStatus = async (id, { status, adminNote }) => {
 // 🧾 4. Fetch all return requests by username (for user history UI)
 const fetchUserReturns = async (username) => {
   try {
-    const res = await axios.get(`http://localhost:3000/returnRequest/user/${username}`);
+    const res = await axios.get(`https://bmp-inv-be.zenbytes.id/returnRequest/user/${username}`);
     stateReturn.returnList = res.data;
   } catch (err) {
     console.error("❌ Gagal mengambil data retur user:", err.response?.data || err.message);

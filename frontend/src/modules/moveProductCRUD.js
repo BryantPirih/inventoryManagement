@@ -14,7 +14,7 @@ const moveProductCRUD = () => {
         body: JSON.stringify({ moveId, products }),
       }
 
-      const res = await fetch("http://localhost:3000/moveProduct/new", request)
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/moveProduct/new", request)
       const data = await res.json()
       return data
     } catch (error) {
@@ -25,7 +25,7 @@ const moveProductCRUD = () => {
   // ✅ Get move product list for a move
   const getMoveProduct = async (moveId) => {
     try {
-      const res = await fetch("http://localhost:3000/moveProduct/" + moveId)
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/moveProduct/" + moveId)
       const data = await res.json()
       stateMoveProduct.moveProducts = data
     } catch (error) {
@@ -41,7 +41,7 @@ const moveProductCRUD = () => {
         headers: { "Content-Type": "application/json" },
       }
 
-      const res = await fetch("http://localhost:3000/moveProduct/finalize/" + moveId, request)
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/moveProduct/finalize/" + moveId, request)
       const data = await res.json()
       return data
     } catch (error) {

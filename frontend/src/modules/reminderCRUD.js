@@ -11,7 +11,7 @@ const getReminder = () => {
 
   const getAllReminder = async () => {
     try {
-      const res = await fetch("http://localhost:3000/reminder/")
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/reminder/")
       const data = await res.json()
       stateReminder.reminders = data
     } catch (error) {
@@ -23,7 +23,7 @@ const getReminder = () => {
     try {
         const userId = sessionStorage.getItem('username') // or 'username', 'email', etc.
         if (!userId) throw new Error("User not logged in")
-        const response = await fetch("http://localhost:3000/reminder/new", {
+        const response = await fetch("https://bmp-inv-be.zenbytes.id/reminder/new", {
             method: "POST",
             headers: {
             "Content-Type": "application/json"
@@ -49,7 +49,7 @@ const getReminder = () => {
 
   const deleteReminder = async (id) => {
     try {
-      await fetch(`http://localhost:3000/reminder/delete/${id}`, {
+      await fetch(`https://bmp-inv-be.zenbytes.id/reminder/delete/${id}`, {
         method: "POST"
       })
       await getAllReminder()

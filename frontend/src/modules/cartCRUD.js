@@ -11,7 +11,7 @@ const getCart =() =>{
 
     const getAllCart = async () =>{
         try {
-            await fetch("http://localhost:3000/cart/")
+            await fetch("https://bmp-inv-be.zenbytes.id/cart/")
             .then(res=> res.json())
             .then(data=> {
                 stateCart.cart = data
@@ -23,7 +23,7 @@ const getCart =() =>{
 
     const getOneCart = async (username) =>{
         try {
-            await fetch("http://localhost:3000/cart/get/"+username)
+            await fetch("https://bmp-inv-be.zenbytes.id/cart/get/"+username)
             .then(res=> res.json())
             .then(data=> {
                 stateCart.cart = data
@@ -49,14 +49,14 @@ const getCart =() =>{
                 }],
             })
         }
-        fetch("http://localhost:3000/cart/new",
+        fetch("https://bmp-inv-be.zenbytes.id/cart/new",
         request
         )
     }
 
     const deleteCart = async (username) => {
         try {
-            const response = await fetch(`http://localhost:3000/cart/delete/${username}`, {
+            const response = await fetch(`https://bmp-inv-be.zenbytes.id/cart/delete/${username}`, {
                 method: "DELETE"
             });
             return await response.json();
@@ -75,7 +75,7 @@ const getCart =() =>{
             body: JSON.stringify({ qty: newQty })
             }
 
-            const res = await fetch(`http://localhost:3000/cart/update/${cartId}/${itemId}`, request)
+            const res = await fetch(`https://bmp-inv-be.zenbytes.id/cart/update/${cartId}/${itemId}`, request)
             const data = await res.json()
 
             // Optionally re-fetch updated cart

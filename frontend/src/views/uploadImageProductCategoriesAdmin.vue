@@ -56,7 +56,7 @@ export default {
         formData.append("icon", imageFile.value);
         formData.append("categoryId", categoryId);
 
-        const res = await fetch("http://localhost:3000/productCategories/upload-icon", {
+        const res = await fetch("https://bmp-inv-be.zenbytes.id/productCategories/upload-icon", {
           method: "POST",
           body: formData
         });

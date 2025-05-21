@@ -12,7 +12,7 @@ const getProductCategories = () => {
 
   const getAllProductCategories = async () => {
     try {
-      const res = await fetch("http://localhost:3000/productCategories/")
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/productCategories/")
       const data = await res.json()
       statePC.productCategories = data
     } catch (error) {
@@ -35,7 +35,7 @@ const getProductCategories = () => {
         })
       };
 
-      const res = await fetch("http://localhost:3000/productCategories/new", request);
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/productCategories/new", request);
       const data = await res.json();
 
       if (res.ok) {
@@ -54,7 +54,7 @@ const getProductCategories = () => {
 
   const deleteProductCategory = async (id) => {
     try {
-      await fetch(`http://localhost:3000/productCategories/${id}`, {
+      await fetch(`https://bmp-inv-be.zenbytes.id/productCategories/${id}`, {
         method: 'DELETE'
       })
       // Refresh after deletion

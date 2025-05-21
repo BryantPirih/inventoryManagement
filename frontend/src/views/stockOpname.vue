@@ -98,7 +98,7 @@ export default {
 
     const saveTable = async () => {
       try {
-        const response = await fetch("http://localhost:3000/stockOpname/new", {
+        const response = await fetch("https://bmp-inv-be.zenbytes.id/stockOpname/new", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

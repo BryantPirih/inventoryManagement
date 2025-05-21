@@ -10,7 +10,7 @@ const moveCRUD = () => {
   // ✅ Get all move headers
   const getAllMove = async () => {
     try {
-      const res = await fetch("http://localhost:3000/move/");
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/move/");
       const data = await res.json();
       stateMove.move = data;
     } catch (error) {
@@ -21,7 +21,7 @@ const moveCRUD = () => {
   // ✅ Get one move by ID
   const getOneMove = async (id) => {
     try {
-      const res = await fetch("http://localhost:3000/move/get/" + id);
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/move/get/" + id);
       const data = await res.json();
       stateMove.move = data;
     } catch (error) {
@@ -39,7 +39,7 @@ const moveCRUD = () => {
           requester: stateMove.newRequester
         })
       };
-      const res = await fetch("http://localhost:3000/move/new", request);
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/move/new", request);
       const data = await res.json();
       return data.move; // ← used by UI to get move.id
     } catch (error) {
@@ -49,7 +49,7 @@ const moveCRUD = () => {
 
   const getMoveByUsernameWarehouse = async (username) => {
   try {
-    const res = await fetch(`http://localhost:3000/move/byWarehouseUser/${username}`);
+    const res = await fetch(`https://bmp-inv-be.zenbytes.id/move/byWarehouseUser/${username}`);
     const data = await res.json();
     stateMove.move = data;
   } catch (error) {
@@ -69,7 +69,7 @@ const moveCRUD = () => {
           approver: approver,
         })
       };
-      const res = await fetch("http://localhost:3000/move/updateMove/" + id, request);
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/move/updateMove/" + id, request);
       const data = await res.json();
       return data;
     } catch (error) {

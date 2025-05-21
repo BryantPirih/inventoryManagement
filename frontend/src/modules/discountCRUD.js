@@ -17,7 +17,7 @@ const getDiscount =() =>{
 
     const getAllDiscount = async () =>{
         try {
-            await fetch("http://localhost:3000/discount/")
+            await fetch("https://bmp-inv-be.zenbytes.id/discount/")
             .then(res=> res.json())
             .then(data=> {
                 stateDiscount.discount = data
@@ -29,7 +29,7 @@ const getDiscount =() =>{
 
     const getOneDiscount = async (discountCode) =>{
         try {
-            await fetch("http://localhost:3000/discount/get/"+discountCode)
+            await fetch("https://bmp-inv-be.zenbytes.id/discount/get/"+discountCode)
             .then(res=> res.json())
             .then(data=> {
                 stateDiscount.discount = data
@@ -59,7 +59,7 @@ const getDiscount =() =>{
                 usageLimit: stateDiscount.newUsageLimit,
             })
         }
-        fetch("http://localhost:3000/discount/new",
+        fetch("https://bmp-inv-be.zenbytes.id/discount/new",
         request
         )
     }

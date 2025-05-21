@@ -20,7 +20,7 @@ const getProduct =() =>{
 
     const getAllProduct = async () =>{
         try {
-            await fetch("http://localhost:3000/product/")
+            await fetch("https://bmp-inv-be.zenbytes.id/product/")
             .then(res=> res.json())
             .then(data=> {
                 stateProduct.product = data
@@ -32,7 +32,7 @@ const getProduct =() =>{
 
     const getAllProductByWarehouse = async (warehouseId) => {
         try {
-            const res = await fetch(`http://localhost:3000/product/byWarehouse/${warehouseId}`);
+            const res = await fetch(`https://bmp-inv-be.zenbytes.id/product/byWarehouse/${warehouseId}`);
             const data = await res.json();
             stateProduct.product = data;
         } catch (error) {
@@ -48,7 +48,7 @@ const getProduct =() =>{
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ amount, price }) // ✅ send both
             };
-            const res = await fetch("http://localhost:3000/product/convertUnit/" + id, request);
+            const res = await fetch("https://bmp-inv-be.zenbytes.id/product/convertUnit/" + id, request);
             const data = await res.json();
             return data;
         } catch (error) {
@@ -58,7 +58,7 @@ const getProduct =() =>{
 
     const getAllProductMainWarehouse = async () =>{
         try {
-            await fetch("http://localhost:3000/product/getAllProductMainWarehouse")
+            await fetch("https://bmp-inv-be.zenbytes.id/product/getAllProductMainWarehouse")
             .then(res=> res.json())
             .then(data=> {
                 stateProduct.product = data
@@ -70,7 +70,7 @@ const getProduct =() =>{
 
     const getOneProduct = async (id) =>{
         try {
-            await fetch("http://localhost:3000/product/get/"+id)
+            await fetch("https://bmp-inv-be.zenbytes.id/product/get/"+id)
             .then(res=> res.json())
             .then(data=> {
                 stateProduct.product = data
@@ -82,7 +82,7 @@ const getProduct =() =>{
 
     const getOneProductMainWarehouse = async (id) =>{
         try {
-            await fetch("http://localhost:3000/product/getOneProductMainWarehouse/"+id)
+            await fetch("https://bmp-inv-be.zenbytes.id/product/getOneProductMainWarehouse/"+id)
             .then(res=> res.json())
             .then(data=> {
                 stateProduct.product = data
@@ -110,7 +110,7 @@ const getProduct =() =>{
             })
             };
 
-            const res = await fetch("http://localhost:3000/product/new", request);
+            const res = await fetch("https://bmp-inv-be.zenbytes.id/product/new", request);
             const data = await res.json();
 
             if (res.ok) {
@@ -139,7 +139,7 @@ const getProduct =() =>{
                     updateStatus: status,
                 })
             }
-            fetch("http://localhost:3000/product/updateStatusProduct/"+id,
+            fetch("https://bmp-inv-be.zenbytes.id/product/updateStatusProduct/"+id,
             request
             )
         } catch (error) {
@@ -153,7 +153,7 @@ const getProduct =() =>{
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ stock })
             };
-            await fetch(`http://localhost:3000/product/restock/${id}`, request);
+            await fetch(`https://bmp-inv-be.zenbytes.id/product/restock/${id}`, request);
         } catch (error) {
             console.log("Error during restock:", error);
         }
@@ -166,7 +166,7 @@ const getProduct =() =>{
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ description })
             };
-            await fetch(`http://localhost:3000/product/updateDescription/${id}`, request);
+            await fetch(`https://bmp-inv-be.zenbytes.id/product/updateDescription/${id}`, request);
         } catch (error) {
             console.log("Error updating description:", error);
         }

@@ -192,7 +192,7 @@ export default {
         };
 
         // Create the order
-        const orderResult = await axios.post('http://localhost:3000/order/new', orderPayload, {
+        const orderResult = await axios.post('https://bmp-inv-be.zenbytes.id/order/new', orderPayload, {
           headers: { 'Content-type': 'application/json' },
           credentials: 'include'
         });
@@ -207,7 +207,7 @@ export default {
             window.location.href = '/paymentSuccess';  // Redirect after COD
           } else {
             // For Payment Gateway, send to Midtrans for payment
-            const response = await axios.post('http://localhost:3000/midtrans/createTransaction', {
+            const response = await axios.post('https://bmp-inv-be.zenbytes.id/midtrans/createTransaction', {
               order_id: orderResult.data.order.id,
               gross_amount: orderResult.data.order.totalPayment,
               customer_details: {
@@ -222,7 +222,7 @@ export default {
             // Trigger the Snap payment popup
             window.snap.pay(token, {
               onSuccess: async (paymentResult) => {
-                await axios.put(`http://localhost:3000/order/updateStatusAfterPayment/${orderResult.data.order.id}`);
+                await axios.put(`https://bmp-inv-be.zenbytes.id/order/updateStatusAfterPayment/${orderResult.data.order.id}`);
                 sessionStorage.removeItem('qty');
                 sessionStorage.removeItem('barang');
                 sessionStorage.removeItem('discountCode');

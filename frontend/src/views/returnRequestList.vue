@@ -72,7 +72,7 @@ export default {
   methods: {
     async fetchRequests() {
       try {
-        const res = await axios.get("http://localhost:3000/returnRequest");
+        const res = await axios.get("https://bmp-inv-be.zenbytes.id/returnRequest");
         this.requests = res.data;
       } catch (err) {
         console.error("Error fetching return requests:", err);

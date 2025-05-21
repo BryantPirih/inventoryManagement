@@ -11,7 +11,7 @@ const runReminderScheduler = require('./jobs/reminderScheduler');
 // Middleware
 app.use(cors({
   credentials : true,
-  origin : ['http://localhost:3000' , 'http://localhost:8080' , 'http://localhost:4200']
+  origin : ['http://localhost:3000' , 'http://localhost:8080' , 'http://localhost:4200' , 'https://inventory.zenbytes.id']
 }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(cookieParser());

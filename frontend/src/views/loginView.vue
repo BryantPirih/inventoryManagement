@@ -51,7 +51,7 @@ export default {
     methods:{
         async loging(){
             try {
-                let result = await axios.post("http://localhost:3000/user/login",{
+                let result = await axios.post("https://bmp-inv-be.zenbytes.id/user/login",{
                     headers : {'Content-type' : 'application/json'},
                     credentials : 'include',
                     input: this.stateLogin.newInput,

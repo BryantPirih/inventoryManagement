@@ -7,7 +7,7 @@ const getCityAndProvince =() =>{
     })
     const getAllProvince = async () =>{
         try {
-            await fetch("http://localhost:3000/province/")
+            await fetch("https://bmp-inv-be.zenbytes.id/province/")
             .then(res=> res.json())
             .then(data=> {
                 stateCnP.province = data
@@ -18,7 +18,7 @@ const getCityAndProvince =() =>{
     }
     const getAllCity = async () =>{
         try {
-            await fetch("http://localhost:3000/cities/")
+            await fetch("https://bmp-inv-be.zenbytes.id/cities/")
             .then(res=> res.json())
             .then(data=> {
                 stateCnP.city = data

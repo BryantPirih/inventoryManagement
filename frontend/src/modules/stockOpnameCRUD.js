@@ -9,7 +9,7 @@ const stockOpnameCRUD = () => {
   // ✅ Get all stock opname logs
   const getAllOpnameLogs = async () => {
     try {
-      const res = await fetch("http://localhost:3000/stockOpname");
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/stockOpname");
       const data = await res.json();
       stateStockOpname.logs = data.data;
     } catch (error) {
@@ -20,7 +20,7 @@ const stockOpnameCRUD = () => {
   // ✅ Get logs by warehouse
   const getOpnameLogsByWarehouse = async (warehouseId) => {
     try {
-      const res = await fetch("http://localhost:3000/stockOpname/" + warehouseId);
+      const res = await fetch("https://bmp-inv-be.zenbytes.id/stockOpname/" + warehouseId);
       const data = await res.json();
       stateStockOpname.warehouseLogs = data.data;
     } catch (error) {

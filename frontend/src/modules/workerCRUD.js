@@ -18,7 +18,7 @@ const getWorker =() =>{
             const role = sessionStorage.getItem("role");
 
 
-            await fetch(`http://localhost:3000/worker?username=${username}&role=${role}`)
+            await fetch(`https://bmp-inv-be.zenbytes.id/worker?username=${username}&role=${role}`)
             .then(res=> res.json())
             .then(data=> {
                 stateWorker.workers = data
@@ -45,14 +45,14 @@ const getWorker =() =>{
                 password: stateWorker.newPassword
             })
         }
-        fetch("http://localhost:3000/worker/new",
+        fetch("https://bmp-inv-be.zenbytes.id/worker/new",
         request
         )
     }
 
     const getOneWorker = async (username) => {
     try {
-      const res = await fetch(`http://localhost:3000/worker/get/${username}`)
+      const res = await fetch(`https://bmp-inv-be.zenbytes.id/worker/get/${username}`)
       const data = await res.json()
       stateWorker.workers = data 
     } catch (error) {

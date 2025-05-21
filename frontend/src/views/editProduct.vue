@@ -210,7 +210,7 @@ export default {
     watch(showConvertModal, async (val) => {
       if (val) {
         const p = stateProduct.product?.data;
-        const res = await fetch(`http://localhost:3000/productCategories/`);
+        const res = await fetch(`https://bmp-inv-be.zenbytes.id/productCategories/`);
         const allCategories = await res.json();
         const cat = allCategories.find(c => c.id === p.categoryId);
         if (cat?.conversionRate) {
@@ -233,7 +233,7 @@ export default {
       }
 
       try {
-        const res = await fetch(`http://localhost:3000/productCategories/`);
+        const res = await fetch(`https://bmp-inv-be.zenbytes.id/productCategories/`);
         const allCategories = await res.json();
         const cat = allCategories.find(c => c.id === p.categoryId);
 

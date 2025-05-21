@@ -8,7 +8,7 @@ const getOrder =() =>{
 
     const getAllOrder = async () =>{
         try {
-            await fetch("http://localhost:3000/order/")
+            await fetch("https://bmp-inv-be.zenbytes.id/order/")
             .then(res=> res.json())
             .then(data=> {
                 stateOrder.order = data
@@ -20,7 +20,7 @@ const getOrder =() =>{
 
     const getHistoryOrders = async () => {
         try {
-            const res = await fetch("http://localhost:3000/order/history");
+            const res = await fetch("https://bmp-inv-be.zenbytes.id/order/history");
             const data = await res.json();
             stateOrder.order = data;
         } catch (err) {
@@ -30,7 +30,7 @@ const getOrder =() =>{
 
     const getOneOrder = async (id) =>{
         try {
-            await fetch("http://localhost:3000/order/get/"+id)
+            await fetch("https://bmp-inv-be.zenbytes.id/order/get/"+id)
             .then(res=> res.json())
             .then(data=> {
                 stateOrder.order = data
@@ -42,7 +42,7 @@ const getOrder =() =>{
 
     const getAllOrderUser = async (username) =>{
         try {
-            await fetch("http://localhost:3000/order/getAllOrderUser/"+username)
+            await fetch("https://bmp-inv-be.zenbytes.id/order/getAllOrderUser/"+username)
             .then(res=> res.json())
             .then(data=> {
                 stateOrder.order = data
@@ -57,7 +57,7 @@ const getOrder =() =>{
             const payload = { newStatus };
             if (receivedBy) payload.receivedBy = receivedBy;
 
-            const response = await axios.put(`http://localhost:3000/order/updateOrder/${id}`, payload);
+            const response = await axios.put(`https://bmp-inv-be.zenbytes.id/order/updateOrder/${id}`, payload);
             return response.data; // ✅ Return updated order
         } catch (err) {
             console.error("Error updating order:", err);
