@@ -1,63 +1,148 @@
-<template lang="">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
-        <div class="container-fluid">
-            <router-link to="/home" class="navbar-brand">Neo Grosir</router-link>
+<template>
+    <div>
+      <!-- Topbar for large screens -->
+      <nav class="navbar bg-body-tertiary px-4 d-none d-lg-flex align-items-center justify-content-between">
+        <!-- Brand -->
+        <router-link to="/home" class="navbar-brand me-4">Neo Grosir</router-link>
+  
+        <!-- Center: Search bar -->
+        <form @submit.prevent="goToSearchPage" class="d-flex flex-grow-1 mx-4" style="max-width: 500px;" role="search">
+          <input
+            v-model="searchQuery"
+            class="form-control me-2"
+            type="search"
+            placeholder="Cari produk..."
+            aria-label="Search"
+          />
+          <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
 
-            <!-- toggle button -->
-            <button class="navbar-toggler shadow-none" type="button" data-bs-toggle="collapse" 
-            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" 
-            aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <!-- sidebar -->
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
-                
-                <form class="d-flex" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
-
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <router-link to="/history" class="nav-link"><i class="bi bi-card-list" style="font-size: 25px;"></i></router-link>
-                    </li>
-                    <li class="nav-item">
-                        <router-link to="/cart" class="nav-link"><i class="bi bi-cart" style="font-size: 25px;"></i></router-link>
-                    </li>
-                    <li class="nav-item">
-                        <router-link to="/wishlist" class="nav-link"><i class="bi bi-heart" style="font-size: 25px;"></i></router-link>
-                    </li>
-                    <li class="nav-item">
-                        <router-link to="" class="nav-link"><i class="bi bi-bell" style="font-size: 25px;"></i></router-link>
-                    </li>
-                    <li class="nav-item">
-                        <router-link to="/addressLocation" class="nav-link"><i class="bi bi-geo-alt" style="font-size: 25px;"></i></router-link>
-                    </li>
-                    <li class="nav-item">
-                        <router-link to="" class="nav-link"><i class="bi bi-gear" style="font-size: 25px;"></i></router-link>
-                    </li>
-                </ul>
-
-                <button @click="logout()" class="btn btn-outline-danger" type="submit">Logout</button>
-            </div>
+  
+        <!-- Right: Icons + Logout -->
+        <div class="d-flex align-items-center gap-3">
+          <router-link to="/history" class="nav-link"><i class="bi bi-card-list fs-5"></i></router-link>
+          <router-link to="/cart" class="nav-link"><i class="bi bi-cart fs-5"></i></router-link>
+          <router-link to="/wishlist" class="nav-link"><i class="bi bi-heart fs-5"></i></router-link>
+          <router-link to="/returnStatus" class="nav-link" title="Riwayat Retur"><i class="bi bi-arrow-counterclockwise fs-5"></i></router-link>
+          <notificationBell />
+          <router-link to="/addressLocation" class="nav-link"><i class="bi bi-geo-alt fs-5"></i></router-link>
+          <router-link to="/userSettings" class="nav-link"><i class="bi bi-gear fs-5"></i></router-link>
+          <button @click="logout" class="btn btn-outline-danger ms-2">Logout</button>
         </div>
-    </nav>
-</template>
+      </nav>
+  
+      <!-- Topbar for small screens (mobile) -->
+      <nav class="navbar bg-body-tertiary d-flex d-lg-none justify-content-between px-3">
+        <router-link to="/home" class="navbar-brand">Neo Grosir</router-link>
+        <button class="btn btn-outline-secondary" @click="toggleSidebar">
+          <i class="bi bi-list fs-4"></i>
+        </button>
+      </nav>
+  
+      <!-- Sidebar (offcanvas) -->
+      <div
+        class="offcanvas-mobile"
+        :class="{ 'offcanvas-show': isSidebarOpen }"
+        @click.self="toggleSidebar"
+      >
+        <div class="offcanvas-content">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Neo Grosir</h5>
+            <button class="btn-close" @click="toggleSidebar"></button>
+          </div>
+          <div class="offcanvas-body d-flex flex-column gap-3">
+  
+            <!-- Search -->
+            <form @submit.prevent="goToSearchPage" class="d-flex" role="search">
+              <input
+                v-model="searchQuery"
+                class="form-control me-2"
+                type="search"
+                placeholder="Cari produk..."
+                aria-label="Search"
+              />
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
 
-<script>
+  
+            <!-- Icons -->
+            <ul class="nav flex-column">
+              <li class="nav-item"><router-link to="/history" class="nav-link"><i class="bi bi-card-list me-2"></i>History</router-link></li>
+              <li class="nav-item"><router-link to="/cart" class="nav-link"><i class="bi bi-cart me-2"></i>Cart</router-link></li>
+              <li class="nav-item"><router-link to="/wishlist" class="nav-link"><i class="bi bi-heart me-2"></i>Wishlist</router-link></li>
+              <li class="nav-item"><router-link to="/returnStatus" class="nav-link"><i class="bi bi-arrow-counterclockwise me-2"></i>Retur</router-link></li>
+              <li class="nav-item"><router-link to="" class="nav-link"><i class="bi bi-bell me-2"></i>Notifications</router-link></li>
+              <li class="nav-item"><router-link to="/addressLocation" class="nav-link"><i class="bi bi-geo-alt me-2"></i>Location</router-link></li>
+              <li class="nav-item"><router-link to="/userSettings" class="nav-link"><i class="bi bi-gear me-2"></i>Settings</router-link></li>
+            </ul>
+  
+            <!-- Logout -->
+            <button @click="logout" class="btn btn-outline-danger mt-4">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+  
+  <script>
+import notificationBell from '@/components/notificationBell.vue';
 
 export default {
   name: "navBarUser",
-  methods:{
-        async logout(){
-            sessionStorage.clear();
-            this.$router.push({name:'login'})
-        }
-    }
+  components: {
+    notificationBell,
+  },
+  data() {
+    return {
+      isSidebarOpen: false,
+      searchQuery: ""
+    };
+  },
+  methods: {
+    toggleSidebar() {
+      this.isSidebarOpen = !this.isSidebarOpen;
+    },
+    logout() {
+      sessionStorage.clear();
+      this.$router.push({ name: "login" });
+    },
+    goToSearchPage() {
+      const keyword = this.searchQuery.trim();
+      if (keyword) {
+        this.$router.push({ name: "searchResults", query: { q: keyword } });
+        this.searchQuery = ""; // clear after search
+        this.isSidebarOpen = false; // optional: close sidebar on mobile
+      }
+    },
+  },
 };
-</script>
-<style scoped lang="">
-    
-</style>
+
+  </script>
+  
+  <style scoped>
+  /* Offcanvas sidebar for mobile */
+  .offcanvas-mobile {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 250px;
+    background-color: white;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1055;
+    visibility: hidden;
+  }
+  
+  .offcanvas-show {
+    transform: translateX(0);
+    visibility: visible;
+  }
+  
+  .offcanvas-content {
+    height: 100%;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+  </style>
+  

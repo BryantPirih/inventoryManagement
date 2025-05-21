@@ -1,27 +1,53 @@
-<template lang="">
-    <div>
-        <div class="card shadow">
-            <!-- <img src="..." class="card-img-top" alt="..."> -->
-            <div class="card-body">
-                <h5 class="card-title">belanja {{item[0].orderDate}}</h5>
-                <p class="card-text"  v-if="item[0].status === 0 ">status: sedang di proses </p>
-                <p class="card-text"  v-else-if="item[0].status === 1 ">status: sedang dikirim </p>
-                <p class="card-text"  v-else-if="item[0].status === 2 ">status: sudah sampai tujuan </p>
-                <p class="card-text"  v-else> status: meunggu pembayaran </p>
-                <p class="card-text">{{item[0].productName}}</p>
-                <p class="card-text"> {{item[0].quantity}} barang Total belanja Rp. {{parseInt(item[0].totalPayment).toLocaleString('id')}}  </p>
-            </div>
-        </div>
+<template>
+  <div>
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h5 class="card-title text-primary">
+          Belanja {{ formatDate(item.orderDate) }}
+        </h5>
+
+        <p class="card-text">
+          <span class="badge bg-secondary">Status: {{ getStatusText(item.status) }}</span>
+        </p>
+
+        <p class="card-text fw-semibold">{{ item.productName }}</p>
+        <p class="card-text">
+          {{ item.quantity }} barang • Total belanja Rp. {{ formatCurrency(item.totalPayment) }}
+        </p>
+      </div>
     </div>
+  </div>
 </template>
+
 <script>
-
-
 export default {
   name: "cardOrder",
-  props: ['item']
+  props: ['item'],
+  methods: {
+    formatDate(isoDateStr) {
+      const date = new Date(isoDateStr);
+      return date.toISOString().split('T')[0];
+    },
+    formatCurrency(value) {
+      return parseInt(value).toLocaleString("id-ID");
+    },
+    getStatusText(status) {
+      const statusMap = {
+        0: "menunggu pembayaran",
+        1: "menunggu konfirmasi",
+        2: "sedang diproses",
+        3: "sedang dikirim",
+        4: "sampai ditujuan",
+        5: "telah diterima"
+      };
+      return statusMap[status] || "status tidak diketahui";
+    }
+  }
 };
 </script>
-<style lang="">
-    
+
+<style scoped>
+.card-title {
+  font-size: 1.1rem;
+}
 </style>

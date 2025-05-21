@@ -1,75 +1,91 @@
-import {reactive} from 'vue'
+import { reactive } from 'vue'
 
-const getAddress =() =>{
-    const stateAddress = reactive({
-        newUsername: '',
-        fullAddress: '',
-        province: '',
-        city: '',
-        district: '',
-        subDistrict: '',
-        postalCode: '',
-        recipientName: '',
-        recipientEmail: '',
-        recipientPhone: '',
-        address : {}
-    })
+const getAddress = () => {
+  const stateAddress = reactive({
+    newUsername: '',
+    fullAddress: '',
+    province: '',
+    city: '',
+    district: '',
+    subDistrict: '',
+    postalCode: '',
+    recipientName: '',
+    recipientEmail: '',
+    recipientPhone: '',
+    address: {}
+  })
 
-    const getAllAddress = async () =>{
-        try {
-            await fetch("http://localhost:3000/address/")
-            .then(res=> res.json())
-            .then(data=> {
-                stateAddress.address = data
-            });
-        } catch (error) {
-            console.log(error)
-        }
+  // Fetch all addresses for a user
+  const getAllAddress = async (username) => {
+    try {
+      const res = await fetch(`http://localhost:3000/address/all/${username}`)
+      const data = await res.json()
+      stateAddress.address = data.data // Update state with all addresses
+    } catch (error) {
+      console.log(error)
     }
+  }
 
-    const getOneAddress = async (username) =>{
-        try {
-            await fetch("http://localhost:3000/address/get/"+username)
-            .then(res=> res.json())
-            .then(data=> {
-                stateAddress.address = data
-            });
-        } catch (error) {
-            console.log(error)
-        }
+  // Fetch only the default address for a user
+  const getOneAddress = async (username) => {
+    try {
+      const res = await fetch(`http://localhost:3000/address/get/${username}`)
+      const data = await res.json()
+      stateAddress.address = data.data // Update state with the default address
+    } catch (error) {
+      console.log(error)
     }
+  }
 
-    const newAddress = () =>{
-        const request = {
-            method : "POST",
-            headers: {
-                "Content-Type" : "application/json"
-                //authtoken bisa disini
-            },
-            body: JSON.stringify({
-                username: stateAddress.newUsername,
-                fullAddress : stateAddress.fullAddress,
-                province : stateAddress.province,
-                city : stateAddress.city,
-                district : stateAddress.district,
-                subDistrict : stateAddress.subDistrict,
-                postalCode : stateAddress.postalCode,
-                recipientName : stateAddress.recipientName,
-                recipientEmail : stateAddress.recipientEmail,
-                recipientPhone : stateAddress.recipientPhone,
-            })
-        }
-        fetch("http://localhost:3000/address/new",
-        request
-        )
+  // Create a new address
+  const newAddress = async () => {
+    try {
+      await fetch("http://localhost:3000/address/new", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: stateAddress.newUsername,
+          fullAddress: stateAddress.fullAddress,
+          provinceID: stateAddress.province,
+          cityID: stateAddress.city,
+          district: stateAddress.district,
+          subDistrict: stateAddress.subDistrict,
+          postalCode: stateAddress.postalCode,
+          recipientName: stateAddress.recipientName,
+          recipientEmail: stateAddress.recipientEmail,
+          recipientPhone: stateAddress.recipientPhone,
+          isDefault: 1 // non-default by default, will be updated later if needed
+        })
+      })
+    } catch (error) {
+      console.log(error)
     }
+  }
 
-    return {
-        stateAddress,
-        getAllAddress,
-        getOneAddress,
-        newAddress
+  // Update the default address
+  const updateAddress = async (id, updatedData) => {
+    try {
+      await fetch(`http://localhost:3000/address/updateDefault/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(updatedData)
+      })
+    } catch (error) {
+      console.log(error)
     }
+  }
+
+  return {
+    stateAddress,
+    getAllAddress,
+    getOneAddress,
+    newAddress,
+    updateAddress
+  }
 }
 
 export default getAddress

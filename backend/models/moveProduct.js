@@ -1,10 +1,16 @@
 const mongoose = require('mongoose');
 
 const moveProductSchemas = new mongoose.Schema({
-    id : String,
-    moveId : String,
-    productId: String,
-    quantity : Number
+  moveId: String, // FK to 'move'
+  products: [
+    {
+      productId: String,
+      quantity: Number,
+      unitPrice: Number, // Harga Jual (per item)
+      total: Number,     // quantity * unitPrice
+      description: String
+    }
+  ]
 });
 
 module.exports = mongoose.model('moveProduct', moveProductSchemas);

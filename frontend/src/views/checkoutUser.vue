@@ -1,72 +1,92 @@
-<template lang="">
+<template>
     <div>
-        <navBarUser/>
-    </div>
-    <h2>checkout</h2>
-    <br>
-    <div class="col mb-3">
-        alamat Pengiriman
-        <div v-if="stateAddress.address.data != null">
-            <div class="row-md-4 mt-d" v-for="item in stateAddress.address" :key="item.id">
-                <cardAddress :item="item"/>
-            </div>
+      <navBarUser />
+      <div class="container my-4">
+        <h2 class="mb-4">Checkout</h2>
+        <!-- Address Section -->
+        <div class="card p-3 mb-4">
+        <h5 class="card-title">Alamat Pengiriman</h5>
+        <div v-if="defaultAddress">
+          <p><strong>{{ defaultAddress.recipientName }}</strong></p>
+          <p>
+            {{ defaultAddress.fullAddress }}, {{ defaultAddress.district }},
+            {{ defaultAddress.subDistrict }}, {{ defaultAddress.city }},
+            {{ defaultAddress.province }}, {{ defaultAddress.postalCode }}
+          </p>
+          <p>Email: {{ defaultAddress.recipientEmail }}</p>
+          <p>Telp: {{ defaultAddress.recipientPhone }}</p>
         </div>
-        <div v-else>
-            blom ada alamat pengiriman
-        </div>
-    </div>
-    <div class="col mb-3">
-        Pesanan 
-        <div class="row-md-4 mt-d" v-for="item in stateProduct.product" :key="item.name">
-            <cardCheckout :item="item"/>
-        </div>
-        quantity : {{qty}}
-    </div>
-    
-    <div class="col mb-3">
-        Metode Pembayaran<br>
-        <input type="radio" v-model="pick" :value="0" name="metodePembayaran" />
-        <label for="COD">Cash On Delivery (COD) </label> <br>
-        <input type="radio" v-model="pick" :value="1" name="metodePembayaran"/>
-        <label for="COD">Payment Gateway</label><br>
-    </div>
+        <div v-else class="text-muted">Belum ada alamat pengiriman.</div>
+      </div>
 
-    <div class="col mb-3">
-        Voucher
-        <router-link v-if="discountCode === '' " to="/discountPage" class="nav-link">
-            <button class="btn btn-outline-success" type="submit"><i class="bi bi-percent"></i>
-                Klik untuk pakai diskon
+        <!-- Product Section -->
+        <div class="mb-4" v-if="stateProduct.product.data">
+          <h5 class="mb-2">Pesanan</h5>
+          <div class="border rounded p-3">
+            <h6 class="mb-1">{{ stateProduct.product.data.name }}</h6>
+            <div class="fw-bold mb-2">Rp {{ parseInt(stateProduct.product.data.price).toLocaleString('id') }}</div>
+            <div><strong>Quantity:</strong> {{ qty }}</div>
+          </div>
+        </div>
+
+
+        <!-- Payment Method -->
+        <div class="card p-3 mb-4">
+          <h5 class="card-title">Metode Pembayaran</h5>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              v-model="pick"
+              :value="0"
+              name="paymentMethod"
+              id="cod"
+            />
+            <label class="form-check-label" for="cod">Cash On Delivery (COD)</label>
+          </div>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              v-model="pick"
+              :value="1"
+              name="paymentMethod"
+              id="gateway"
+            />
+            <label class="form-check-label" for="gateway">Payment Gateway</label>
+          </div>
+        </div>
+  
+        <!-- Voucher -->
+        <div class="card p-3 mb-4">
+          <h5 class="card-title">Voucher</h5>
+          <router-link :to="'/discountPage'" class="nav-link p-0">
+            <button class="btn btn-outline-success">
+              <i class="bi bi-percent"></i>
+              {{ discountCode || "Klik untuk pakai diskon" }}
             </button>
-        </router-link>
-        <router-link v-else to="/discountPage" class="nav-link">
-            <button class="btn btn-outline-success" type="submit"><i class="bi bi-percent"></i>
-                {{discountCode}}
-            </button>
-        </router-link>
+          </router-link>
+        </div>
+  
+        <!-- Summary -->
+        <div class="card p-3 mb-4">
+          <h5 class="card-title">Ringkasan Pembayaran</h5>
+          <p>Subtotal Product: <strong>Rp {{ parseInt(subtotal).toLocaleString('id') }}</strong></p>
+          <p>Diskon Product: <strong>Rp {{ parseInt(discount).toLocaleString('id') }}</strong></p>
+          <p v-if="stateAPI.api && stateAPI.api.rajaongkir">
+            Biaya Pengiriman: <strong>Rp {{
+              parseInt(stateAPI.api.rajaongkir.results[0].costs[1].cost[0].value).toLocaleString('id')
+            }}</strong>
+          </p>
+          <p>Total Pembayaran: <strong class="text-success">Rp {{ parseInt(totalPembayaran).toLocaleString('id') }}</strong></p>
+        </div>
+  
+        <button @click="bayar" class="btn btn-success btn-lg w-100">Bayar</button>
+      </div>
     </div>
-
-    <div class="col mb-3">
-        <label>Ringkasan Pembayaran</label><br>
-        <!-- <div class="row-md-4 mt-d" v-for="item in stateProduct.product" :key="item.name">
-            <cardCheckout :item="item"/>
-        </div> -->
-        <label v-if="subtotal"> 
-            Subtotal Product:  Rp.{{parseInt(subtotal).toLocaleString('id')}}
-        </label> <br>
-        <label> Diskon Product Rp. {{parseInt(discount).toLocaleString('id')}}</label> <br>
-        <label v-if="stateAPI.api && stateAPI.api.rajaongkir"> Biaya Pengiriman Rp. 
-            {{parseInt(stateAPI.api.rajaongkir.results[0].costs[1].cost[0].value).toLocaleString('id')}}</label><br>
-        <label> Total Pembayaran Rp. {{parseInt(totalPembayaran).toLocaleString('id')}}</label> <br>
-        
-    </div>
-
-    <button @click="bayar()" type="button" class="btn btn-success">Bayar</button>
-
-</template>
+  </template>
 <script>
 import navBarUser from "@/components/navBarUser.vue";
-import cardAddress from "@/components/cardAddress.vue";
-import cardCheckout from "@/components/cardCheckout.vue";
 import addressCRUD from "../modules/addressCRUD.js";
 import productCRUD from "../modules/productCRUD.js";
 import discountCRUD from "../modules/discountCRUD.js";
@@ -78,12 +98,10 @@ export default {
   name: "checkoutUser",
   components: {
     navBarUser,
-    cardAddress,
-    cardCheckout
   },
   setup() {
     const { stateAddress, getOneAddress } = addressCRUD();
-    const { stateProduct, getOneProduct } = productCRUD();
+    const { stateProduct, getOneProductMainWarehouse } = productCRUD();
     const { stateDiscount, getOneDiscount } = discountCRUD();
     const { stateAPI, getOngkir } = extAPI();
     const discountCode = ref("")
@@ -93,6 +111,7 @@ export default {
     const discount = ref("")
     const totalPembayaran = ref("")
     const pick = ref(null)
+    const defaultAddress = ref(null);
 
     const script = document.createElement("script");
     script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
@@ -103,7 +122,14 @@ export default {
         qty.value = sessionStorage.getItem("qty")
         stateAddress.newUsername = sessionStorage.getItem("username");
         getOneAddress(stateAddress.newUsername);
-        getOneProduct(sessionStorage.getItem("barang"));
+        watchEffect(() => {
+          if (stateAddress.address && stateAddress.address.cityID) {
+            defaultAddress.value = stateAddress.address;
+            getOngkir(defaultAddress.value.cityID);
+          }
+        });
+
+        getOneProductMainWarehouse(sessionStorage.getItem("barang"));
         getOngkir();
         const storedDiscountCode = sessionStorage.getItem("discountCode");
         if(storedDiscountCode !== null){
@@ -136,9 +162,9 @@ export default {
                     tempdiscount.value >
                     stateDiscount.discount.data.fixedAmountDiscount
                     ) {
-                    discount.value = stateDiscount.discount.data.fixedAmountDiscount;
+                        discount.value = stateDiscount.discount.data.fixedAmountDiscount;
                     } else {
-                    discount.value = tempdiscount.value;
+                        discount.value = tempdiscount.value;
                     }
                 }
             }
@@ -150,86 +176,82 @@ export default {
     });
 
     const bayar = async () => {
-            try {
-                if (pick.value === 0) {
-                    let result = await axios.post("http://localhost:3000/order/new", {
-                        headers: { 'Content-type': 'application/json' },
-                        credentials: 'include',
-                        username: sessionStorage.getItem('username'),
-                        productId: stateProduct.product.data.id,
-                        productName: stateProduct.product.data.name,
-                        paymentMethod: pick.value,
-                        deliveryMethod: 1,
-                        quantity: sessionStorage.getItem('qty'),
-                        discountCode: discountCode.value,
-                        totalPayment: totalPembayaran.value,
-                        status: 0
-                    });
-                    if (result.status === 200) {
-                        alert("pembayaran diterima pesanan akan segera di proses")
-                        sessionStorage.removeItem('qty')
-                        sessionStorage.removeItem('barang')
-                        sessionStorage.removeItem('discountCode')
-                    } else {
-                        alert(result.data.message);
-                    }
-
-                }else {
-                    try {
-                        let result = await axios.post("http://localhost:3000/order/new", {
-                            headers: { 'Content-type': 'application/json' },
-                            credentials: 'include',
-                            username: sessionStorage.getItem('username'),
-                            productId: stateProduct.product.data.id,
-                            productName: stateProduct.product.data.name,
-                            paymentMethod: pick.value,
-                            deliveryMethod: 1,
-                            quantity: sessionStorage.getItem('qty'),
-                            discountCode: discountCode.value,
-                            totalPayment: totalPembayaran.value,
-                            status: 0
-                        });
-                        
-                        const response = await axios.post('http://localhost:3000/midtrans/createTransaction', {
-                            order_id: result.data.order.id,
-                            gross_amount: result.data.order.totalPayment,
-                            customer_details: result.data.order.username,
-                        });
-                        const token = response.data.token;
-                        // Trigger the Snap payment popup
-                        window.snap.pay(token, {
-                        onSuccess: (result) => {
-                            sessionStorage.removeItem('qty')
-                            sessionStorage.removeItem('barang')
-                            sessionStorage.removeItem('discountCode')
-                            console.log('Payment Success:', result);
-                        },
-                        onPending: (result) => {
-                            console.log('Payment Pending:', result);
-                        },
-                        onError: (result) => {
-                            console.error('Payment Error:', result);
-                        },
-                        });
-
-                    } catch (error) {
-                        console.error('Error creating transaction:', error);
-                    }
-                }
-            } catch (error) {
-                if (error.response?.status === 401) {
-                    alert('Incorrect password');
-                } else {
-                    alert('Credentials not found');
-                }
-            }
+      try {
+        // Prepare the order payload
+        const orderPayload = {
+          username: sessionStorage.getItem('username'),
+          items: [{
+            productId: stateProduct.product.data.id,  // Use product id from state
+            productName: stateProduct.product.data.name,  // Use product name from state
+            quantity: sessionStorage.getItem('qty')  // Use quantity from session storage
+          }],
+          paymentMethod: pick.value,
+          deliveryMethod: 1,
+          discountCode: discountCode.value,
+          totalPayment: totalPembayaran.value
         };
+
+        // Create the order
+        const orderResult = await axios.post('http://localhost:3000/order/new', orderPayload, {
+          headers: { 'Content-type': 'application/json' },
+          credentials: 'include'
+        });
+
+        if (orderResult.status === 201) {
+          if (pick.value === 0) {
+            // For COD, the order status is set to 1 in the backend, so we just need to handle the redirect
+            alert("Pembayaran diterima. Pesanan akan segera diproses.");
+            sessionStorage.removeItem('qty');
+            sessionStorage.removeItem('barang');
+            sessionStorage.removeItem('discountCode');
+            window.location.href = '/paymentSuccess';  // Redirect after COD
+          } else {
+            // For Payment Gateway, send to Midtrans for payment
+            const response = await axios.post('http://localhost:3000/midtrans/createTransaction', {
+              order_id: orderResult.data.order.id,
+              gross_amount: orderResult.data.order.totalPayment,
+              customer_details: {
+                first_name: sessionStorage.getItem('username'), // Pass username as first name
+                email: "test@example.com", // Optional: Fetch real email if available
+                phone: "08123456789" // Optional: Fetch real phone if available
+              }
+            });
+
+            const token = response.data.token;
+
+            // Trigger the Snap payment popup
+            window.snap.pay(token, {
+              onSuccess: async (paymentResult) => {
+                await axios.put(`http://localhost:3000/order/updateStatusAfterPayment/${orderResult.data.order.id}`);
+                sessionStorage.removeItem('qty');
+                sessionStorage.removeItem('barang');
+                sessionStorage.removeItem('discountCode');
+                console.log('Payment Success:', paymentResult);
+                window.location.href = '/paymentSuccess';  // Redirect after payment success
+              },
+              onPending: (paymentResult) => {
+                console.log('Payment Pending:', paymentResult);
+              },
+              onError: (paymentResult) => {
+                console.error('Payment Error:', paymentResult);
+              }
+            });
+          }
+        } else {
+          alert(orderResult.data.message);
+        }
+      } catch (error) {
+        console.error(error);
+        alert(error.response?.data?.message || 'Gagal memproses pembayaran');
+      }
+    };
+
 
 
     return { stateAddress, 
             getOneAddress, 
             stateProduct,
-            getOneProduct,
+            getOneProductMainWarehouse,
             stateDiscount,
             getOneDiscount,
             getOngkir,
@@ -240,6 +262,7 @@ export default {
             tempdiscount,
             discount,
             totalPembayaran,
+            defaultAddress,
             pick,
             bayar
             };

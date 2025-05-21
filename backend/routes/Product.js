@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/product');
+const Warehouse = require('../models/warehouse');
+const multer = require('multer');
+const path = require('path');
 const ProductCategories = require('../models/productCategories');
 
+
 const getOneProductCategories = async (category) => { 
-    const oneProductCategories = await ProductCategories.findOne({categoriesName : category});
+    const oneProductCategories = await ProductCategories.findOne({id : category});
     return oneProductCategories
 }
 
@@ -14,36 +18,128 @@ router.get('/', async (req, res)=>{
   res.status(201).json(products)
 });
 
-router.post('/new', async (req, res)=>{
-    try {
-        const { name, stock, category, price, description, status,warehouseId} = req.body;
-        const temp = await getOneProductCategories(category)
-        const id = name.substring(0,1) + "01"
-        const unit = temp.unit
-        const unitConversion = temp.unitConversion
-        const lastUpdate = new Date()
-        const newProduct = new Product({
-            id,
-            name,
-            stock,
-            category,
-            unit,
-            unitConversion,
-            price,
-            description,
-            warehouseId,
-            lastUpdate,
-            status
-        });
+// GET /product/byWarehouse/:warehouseId
+router.get('/byWarehouse/:warehouseId', async (req, res) => {
+  try {
+    const { warehouseId } = req.params;
 
-        await newProduct.save();
-        res.status(201).json({ message: 'Product created successfully', product: newProduct });
-    } catch (error) {
-        // Handle errors
-        console.error('Error creating Product:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
+    const products = await Product.find({ warehouseId });
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error fetching products by warehouse:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
+
+
+router.get('/getAllProductMainWarehouse', async (req, res)=>{
+    const mainWarehouse = await Warehouse.find({main : 0 })
+    const products = await Product.find({ warehouseId : mainWarehouse[0].id});
+    res.status(201).json(products)
+});
+
+// 🔁 POST /product/convertUnit
+router.put('/convertUnit/:id', async (req, res) => {
+  const { id } = req.params;
+  const { amount, price } = req.body;
+
+  if (!amount || amount < 1) {
+    return res.status(400).json({ error: 'Invalid amount to convert' });
+  }
+
+  try {
+    const product = await Product.findOne({ id });
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+
+    const category = await ProductCategories.findOne({ id: product.categoryId });
+    if (!category || category.unitConversion === "-" || !category.conversionRate) {
+      return res.status(400).json({ error: 'This product category is not convertible' });
+    }
+
+    if (product.stock < amount) {
+      return res.status(400).json({ error: 'Not enough stock to convert' });
+    }
+
+    // Update original stock
+    product.stock -= amount;
+    await product.save();
+
+    const convertedId = `${product.id}-${category.unitConversion.toLowerCase()}`;
+    const convertedName = `${product.name} - ${category.unitConversion}`; // ✅ updated name
+    const convertedQty = amount * parseInt(category.conversionRate);
+    const calculatedPrice = Math.floor(product.price / parseInt(category.conversionRate));
+
+    const existingConverted = await Product.findOne({
+      id: convertedId,
+      warehouseId: product.warehouseId
+    });
+
+    if (existingConverted) {
+      existingConverted.stock += convertedQty;
+      existingConverted.lastUpdate = new Date();
+      await existingConverted.save();
+    } else {
+      const newProduct = new Product({
+        id: convertedId,
+        name: convertedName, // ✅ use converted name
+        stock: convertedQty,
+        categoryId: product.categoryId,
+        unit: category.unitConversion,
+        unitConversion: "-",
+        price: price || calculatedPrice,
+        description: product.description,
+        warehouseId: product.warehouseId,
+        lastUpdate: new Date(),
+        status: 1,
+        reason: "Converted from " + product.unit,
+        updatedBy: "system",
+        imageUrl: product.imageUrl
+      });
+      await newProduct.save();
+    }
+
+    res.status(200).json({ message: 'Conversion successful' });
+  } catch (err) {
+    console.error("Conversion error:", err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.post('/new', async (req, res) => {
+  try {
+    const { name, stock, category, price, description, status, warehouseId } = req.body;
+    const temp = await getOneProductCategories(category);
+
+    const now = new Date();
+    const pad = (n, width) => n.toString().padStart(width, '0');
+    const id = `P${now.getFullYear()}${pad(now.getMonth()+1,2)}${pad(now.getDate(),2)}${pad(now.getHours(),2)}${pad(now.getMinutes(),2)}${pad(now.getSeconds(),2)}${pad(now.getMilliseconds(),3)}`;
+    
+    const unit = temp.unit;
+    const unitConversion = temp.unitConversion;
+    const lastUpdate = new Date();
+
+    const newProduct = new Product({
+      id,
+      name,
+      stock,
+      categoryId: category,
+      unit,
+      unitConversion,
+      price,
+      description,
+      warehouseId,
+      lastUpdate,
+      status,
+    });
+
+    await newProduct.save();
+    res.status(201).json({ message: 'Product created successfully', product: newProduct });
+  } catch (error) {
+    console.error('Error creating Product:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 router.post('/stockOpname', async (req, res)=>{
     const {data , user } = req.body
@@ -85,6 +181,12 @@ router.get('/get/:id', async (req, res)=>{
     res.status(201).json({data : oneProduct})
 });
 
+router.get('/getOneProductMainWarehouse/:id', async (req, res)=>{
+    const mainWarehouse = await Warehouse.find({main : 0 })
+    const oneProduct = await Product.findOne({id : req.params.id ,warehouseId : mainWarehouse[0].id });
+    res.status(201).json({data : oneProduct})
+});
+
 router.put('/updateStatusProduct/:id', async (req, res)=>{
     const  {id}  = req.params; 
     const {updateStatus} = req.body; 
@@ -109,19 +211,86 @@ router.put('/updateStatusProduct/:id', async (req, res)=>{
     res.status(200).json(updateStatusProduct);
 });
 
-router.put('/updateProduct/:id', async (req, res)=>{
-    const  {id}  = req.params; 
-    const {newStock,newDescription} = req.body; 
-    const updateProduct = await Product.findOneAndUpdate(
-        {id: id},           
-        { $set: {stock : newStock,
-            description : newDescription
-        } },
-        { new: true }
+router.put('/restock/:id', async (req, res) => {
+  const { id } = req.params;
+  const { stock } = req.body;
+
+  try {
+    const product = await Product.findOne({ id });
+
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    const newStock = product.stock + parseInt(stock);
+
+    const updated = await Product.findOneAndUpdate(
+      { id },
+      { $set: { stock: newStock } },
+      { new: true }
     );
 
-    res.status(200).json(updateProduct);
+    res.status(200).json(updated);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating stock", error: err });
+  }
 });
+
+router.put('/updateDescription/:id', async (req, res) => {
+  const { id } = req.params;
+  const { description } = req.body;
+
+  try {
+    const updated = await Product.findOneAndUpdate(
+      { id },
+      { $set: { description } },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ message: "Product not found" });
+
+    res.status(200).json(updated);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating description", error: err });
+  }
+});
+
+
+
+// Upload product image and update imageUrl
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '../public/uploads/products'));
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, 'product-' + uniqueSuffix + ext);
+  }
+});
+
+const upload = multer({ storage });
+
+router.post('/upload-image', upload.single('image'), async (req, res) => {
+  try {
+    const { productId } = req.body;
+
+    if (!req.file || !productId) {
+      return res.status(400).json({ message: 'Image and productId required' });
+    }
+
+    const imageUrl = `/uploads/products/${req.file.filename}`;
+
+    await Product.findOneAndUpdate(
+      { id: productId },
+      { imageUrl: imageUrl }
+    );
+
+    res.status(200).json({ message: 'Image uploaded and product updated', imageUrl });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 
 

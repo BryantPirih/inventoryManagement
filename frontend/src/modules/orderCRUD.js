@@ -1,4 +1,5 @@
 import {reactive} from 'vue'
+import axios from 'axios'
 
 const getOrder =() =>{
     const stateOrder = reactive({
@@ -16,6 +17,16 @@ const getOrder =() =>{
             console.log(error)
         }
     }
+
+    const getHistoryOrders = async () => {
+        try {
+            const res = await fetch("http://localhost:3000/order/history");
+            const data = await res.json();
+            stateOrder.order = data;
+        } catch (err) {
+            console.log("Error fetching history orders:", err);
+        }
+    };
 
     const getOneOrder = async (id) =>{
         try {
@@ -41,31 +52,26 @@ const getOrder =() =>{
         }
     }
 
-    const updateOrder = async (id,status) =>{
+    const updateOrder = async (id, newStatus, receivedBy = null) => {
         try {
-            const request = {
-                method : "PUT",
-                headers: {
-                    "Content-Type" : "application/json"
-                    //authtoken bisa disini
-                },
-                body: JSON.stringify({
-                    updateStatus: status,
-                })
-            }
-            fetch("http://localhost:3000/order/updateOrder/"+id,
-            request
-            )
-        } catch (error) {
-            console.log(error)
+            const payload = { newStatus };
+            if (receivedBy) payload.receivedBy = receivedBy;
+
+            const response = await axios.put(`http://localhost:3000/order/updateOrder/${id}`, payload);
+            return response.data; // ✅ Return updated order
+        } catch (err) {
+            console.error("Error updating order:", err);
+            alert("Gagal mengupdate status");
         }
-    }
+    };
+
 
     return {
         stateOrder,
         getAllOrder,
         getAllOrderUser,
         getOneOrder,
+        getHistoryOrders,
         updateOrder
     }
 }

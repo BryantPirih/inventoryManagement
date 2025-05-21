@@ -54,11 +54,47 @@ const getCart =() =>{
         )
     }
 
+    const deleteCart = async (username) => {
+        try {
+            const response = await fetch(`http://localhost:3000/cart/delete/${username}`, {
+                method: "DELETE"
+            });
+            return await response.json();
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const updateItemQty = async (cartId, itemId, newQty) => {
+        try {
+            const request = {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ qty: newQty })
+            }
+
+            const res = await fetch(`http://localhost:3000/cart/update/${cartId}/${itemId}`, request)
+            const data = await res.json()
+
+            // Optionally re-fetch updated cart
+            await getOneCart(stateCart.newUsername)
+
+            return data
+        } catch (error) {
+            console.log(error)
+        }
+        }
+
+
     return {
         stateCart,
         getAllCart,
         getOneCart,
-        newCart
+        newCart,
+        deleteCart,
+        updateItemQty
     }
 }
 

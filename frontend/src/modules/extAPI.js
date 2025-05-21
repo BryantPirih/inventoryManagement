@@ -12,32 +12,74 @@ const getAPI =() =>{
         recipientName: '',
         recipientEmail: '',
         recipientPhone: '',
-        api : {}
+        api : {},
+        proviceRAJA: {},
+        cityRAJA: {}
     })
     
-    const getOngkir = async () =>{
+    const getOngkir = async (destinationCityId) => {
         const request = {
             method : "POST",
             headers: {
                 "Content-Type" : "application/json"
-                //authtoken bisa disini
             },
             body: JSON.stringify({
-                origin: '444',
-                destination: '247',
-                weight: 1000,
-                courier: 'jne'
+                destination: destinationCityId
             }),
         };
+
         try {
             const response = await fetch("http://localhost:3000/rajaongkir/cekOngkir", request);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            stateAPI.api = data;
+            console.log('API Response:', data);
+        } catch (error) {
+            console.error('Error fetching Ongkir data:', error);
+        }
+    };
+
+    const getAllProvince = async () =>{
+        const request = {
+            method : "get",
+            headers: {
+                "Content-Type" : "application/json"
+                //authtoken bisa disini
+            },
+        };
+        try {
+            const response = await fetch("http://localhost:3000/rajaongkir/allProvince", request);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
     
             const data = await response.json();
-            stateAPI.api = data; // Store the response data in stateAPI.api
+            stateAPI.proviceRAJA = data; // Store the response data in stateAPI.api
+            console.log('API Response:', data); // Log the response for debugging
+        } catch (error) {
+            console.error('Error fetching Ongkir data:', error); // Log the error
+        }
+        
+    }
+    
+    const getAllCity = async () =>{
+        const request = {
+            method : "get",
+            headers: {
+                "Content-Type" : "application/json"
+                //authtoken bisa disini
+            },
+        };
+        try {
+            const response = await fetch("http://localhost:3000/rajaongkir/allCity", request);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+    
+            const data = await response.json();
+            stateAPI.cityRAJA = data; // Store the response data in stateAPI.api
             console.log('API Response:', data); // Log the response for debugging
         } catch (error) {
             console.error('Error fetching Ongkir data:', error); // Log the error
@@ -45,10 +87,13 @@ const getAPI =() =>{
         
     }
 
+
     return {
         stateAPI,
         getOngkir,
-        getAPI
+        getAPI,
+        getAllCity,
+        getAllProvince
     }
 }
 

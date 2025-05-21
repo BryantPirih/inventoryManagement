@@ -1,71 +1,75 @@
-<template lang="">
-    <div>
-        <navBarInventory/>
+<template>
+  <div>
+    <navBarInventory />
 
-        <body class="container-fluid">
+    <div class="container mt-4">
+      <h3 class="fw-bold mb-4">Create Product Category</h3>
 
-            <div class="containerNew">
-                <form>
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Product Categories</label>
-                        <input type="text" id="warehouse" name="warehouse" class="form-control" required 
-                        v-model="statePC.newCn" >
-                        
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Unit</label>
-                        <input type="text" id="warehouse" name="warehouse" class="form-control" required 
-                        v-model="statePC.newUnit">
-                        
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Unit Conversion</label>
-                        <input type="text" id="warehouse" name="warehouse" class="form-control" required 
-                        v-model="statePC.newUC">
-                        
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Can unit categories be converted</label><br>
-                        <div class="btn-group" role="group" aria-label="Basic radio toggle button group" >
-                            <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked 
-                            value=0 v-model="statePC.boolTF">
-                            <label class="btn btn-outline-danger" for="btnradio1">Tidak</label>
+      <form @submit.prevent="newPC">
+        <div class="mb-3">
+          <label class="form-label">Category Name</label>
+          <input type="text" class="form-control" required v-model="statePC.newCn" />
+        </div>
 
-                            <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off" 
-                            value=1 v-model="statePC.boolTF">
-                            <label class="btn btn-outline-success" for="btnradio2">Iya</label>
-                        </div>
-                    </div>
+        <div class="mb-3">
+          <label class="form-label">Unit</label>
+          <input type="text" class="form-control" required v-model="statePC.newUnit" />
+        </div>
 
+        <div class="mb-3">
+          <label class="form-label">Can Unit Be Converted?</label><br />
+          <div class="btn-group" role="group" aria-label="Conversion option">
+            <input
+              type="radio"
+              class="btn-check"
+              name="conversion"
+              id="radioNo"
+              value="0"
+              v-model="statePC.boolTF"
+            />
+            <label class="btn btn-outline-danger" for="radioNo">No</label>
 
-                    <button @click="newPC()" type="submit" class="btn btn-success">Create</button>
-                </form>
-            </div>
+            <input
+              type="radio"
+              class="btn-check"
+              name="conversion"
+              id="radioYes"
+              value="1"
+              v-model="statePC.boolTF"
+            />
+            <label class="btn btn-outline-success" for="radioYes">Yes</label>
+          </div>
+        </div>
 
-        </body>
+        <div class="mb-3" v-if="statePC.boolTF == 1">
+          <label class="form-label">Unit Conversion</label>
+          <input type="text" class="form-control" required v-model="statePC.newUC" />
+        </div>
+
+        <div class="mb-3" v-if="statePC.boolTF == 1">
+          <label class="form-label">Conversion Rate</label>
+          <input type="number" class="form-control" required min="1" v-model="statePC.newConversionRate" />
+        </div>
+
+        <button type="submit" class="btn btn-success">Create</button>
+      </form>
     </div>
+  </div>
 </template>
+
 <script>
-
-
 import navBarInventory from '@/components/NavBarInventory.vue'
 import productCategoriesCRUD from '../modules/productCategoriesCRUD.js'
-//import {onMounted} from 'vue'
 
 export default {
-    name:"newProductCategories",
-    components:{
-        navBarInventory,
-    },
-    setup(){
-        const {statePC, newPC} = productCategoriesCRUD()
+  name: "newProductCategories",
+  components: {
+    navBarInventory,
+  },
+  setup() {
+    const { statePC, newPC } = productCategoriesCRUD();
 
-        return {statePC, newPC}
-    }
+    return { statePC, newPC };
+  }
 }
 </script>
-<style lang="">
-    
-</style>

@@ -1,67 +1,86 @@
-<template lang="">
-    <div>
-        <navBarInventory/>
-        <body>
-            <table class="table">
-                <thead>
-                    <tr>
-                    <th scope="col">No</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Stock</th>
-                    <th scope="col">Category</th>
-                    <th scope="col">Unit</th>
-                    <th scope="col">Unit Conversion</th>
-                    <th scope="col">Price</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Action</th>
-                    </tr>
-                </thead>
-                <tbody v-for="item in stateProduct.product" :key="item.name">
-                    <tr>
-                    <th scope="row">1</th>
-                    <td>{{item.name}}</td>
-                    <td>{{item.stock}}</td>
-                    <td>{{item.category}}</td>
-                    <td>{{item.unit}}</td>
-                    <td>{{item.unitConversion}}</td>
-                    <td>{{item.price}}</td>
-                    <td>{{item.description}}</td>
-                    <td v-if="item.status === 1">Active</td>
-                    <td v-else>Non-Active</td>
-                    <td>
-                        <router-link :to="'/detailedProduct/'+item.id" class="nav-link">
-                            <button class="btn btn-outline-success" type="submit">Edit</button> 
-                        </router-link>
-                    </td>
-                    </tr>
-                </tbody>
-            </table>
-            
-        </body>
-    </div>
-</template>
-<script>
+<template>
+  <div>
+    <navBarInventory />
+    <div class="container my-5">
+      <h2 class="fw-bold mb-4">Daftar Produk</h2>
 
-import navBarInventory from '@/components/NavBarInventory.vue'
-import productCRUD from '../modules/productCRUD.js'
-import { onMounted } from 'vue'
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>No</th>
+            <th>Nama</th>
+            <th>Stok</th>
+            <th>Kategori</th>
+            <th>Satuan</th>
+            <th>Konversi Satuan</th>
+            <th>Harga</th>
+            <th>Deskripsi</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in stateProduct.product" :key="item.id || index">
+            <td>{{ index + 1 }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.stock }}</td>
+            <td>{{ item.categoryId }}</td>
+            <td>{{ item.unit }}</td>
+            <td>{{ item.unitConversion || '-' }}</td>
+            <td>Rp.{{ parseInt(item.price).toLocaleString('id') }}</td>
+            <td>{{ item.description }}</td>
+            <td>
+              <span :class="item.status === 1 ? 'text-success fw-bold' : 'text-muted'">
+                {{ item.status === 1 ? 'Aktif' : 'Nonaktif' }}
+              </span>
+            </td>
+            <td>
+              <router-link :to="`/detailedProduct/${item.id}`">
+                <button class="btn btn-outline-success btn-sm">
+                  Edit / Restok
+                </button>
+              </router-link>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+
+<script>
+import navBarInventory from "@/components/NavBarInventory.vue";
+import productCRUD from "../modules/productCRUD.js";
+import workerCRUD from "../modules/workerCRUD.js";
+import { onMounted } from "vue";
 
 export default {
-    name:"detailedProductWorker",
-    components:{
-        navBarInventory
-    },
-    setup(){
-        const {stateProduct, getAllProduct} = productCRUD()
+  name: "detailedProductWorker",
+  components: {
+    navBarInventory,
+  },
+  setup() {
+    const { stateProduct, getAllProductByWarehouse } = productCRUD();
+    const { getOneWorker, stateWorker } = workerCRUD();
 
-        onMounted(()=>{
-            getAllProduct()
-        })
-        return {stateProduct, getAllProduct}
-    }
-}
+    const username = sessionStorage.getItem("username");
+
+    const loadProductList = async () => {
+      await getOneWorker(username);
+      const warehouseId = stateWorker.workers.data?.warehouseId;
+      if (warehouseId) {
+        await getAllProductByWarehouse(warehouseId);
+      }
+    };
+
+    onMounted(() => {
+      loadProductList();
+    });
+
+    return {
+      stateProduct,
+    };
+  },
+};
 </script>
-<style lang="">
-    
-</style>

@@ -1,54 +1,133 @@
-<template lang="">
-    <div>
-        <navBarInventory/>
-    </div>
+<template>
+  <div>
+    <navBarInventory />
+    <div class="container mt-4" v-if="stateOrder.order && stateOrder.order.data">
+      <div class="card shadow">
+        <div class="card-body">
+          <h3 class="card-title">Detail Order</h3>
+          <h5 class="text-muted">Order ID: <strong>{{ stateOrder.order.data.id }}</strong></h5>
+          <hr>
 
-    <body>  
-        <div class="col-md-6" v-if="stateOrder.order && stateOrder.order.data">
-            <h2> Detail order</h2>
-            <h2><strong>{{stateOrder.order.data.id}}</strong></h2>
-            <hr>
-            <h4> Pembeli : {{stateOrder.order.data.username}}</h4>
-            <h4> Product Id : {{stateOrder.order.data.productId}}</h4>
-            <h4> Product Name : {{stateOrder.order.data.productName}}</h4>
-            <h4> Quantity : {{stateOrder.order.data.quantity}}</h4>
-            <h4> Total Payment : Rp.{{parseInt(stateOrder.order.data.totalPayment).toLocaleString('id')}}</h4>
-            <h4 class="card-text"  v-if="stateOrder.order.data.deliveryMethod === 0 ">deliveryMethod: pengambilan ditempat </h4>
-            <h4 class="card-text"  v-else> Delivery Method: Delivery </h4>
-            <h4 class="card-text"  v-if="stateOrder.order.data.status === 0 ">status: sedang di proses </h4>
-            <h4 class="card-text"  v-else-if="stateOrder.order.data.status === 1 ">status: sedang dikirim </h4>
-            <h4 class="card-text"  v-else-if="stateOrder.order.data.status === 2 ">status: sudah sampai tujuan </h4>
-            <h4 class="card-text"  v-else> status: meunggu pembayaran </h4>
-            <button @click="updateOrder(stateOrder.order.data.id,stateOrder.order.data.status)" >Update status</button>
+          <p><strong>Pembeli:</strong> {{ stateOrder.order.data.username }}</p>
+
+          <!-- ✅ Loop over all ordered items -->
+          <div v-for="(item, index) in stateOrder.order.data.items" :key="index" class="mb-3 border-start ps-3 border-2">
+            <p><strong>Product ID:</strong> {{ item.productId }}</p>
+            <p><strong>Product Name:</strong> {{ item.productName }}</p>
+            <p><strong>Quantity:</strong> {{ item.quantity }}</p>
+          </div>
+
+          <p><strong>Total Payment:</strong> Rp.{{ parseInt(stateOrder.order.data.totalPayment).toLocaleString('id') }}</p>
+
+          <p>
+            <strong>Delivery Method:</strong>
+            <span v-if="stateOrder.order.data.deliveryMethod === 0">Pengambilan di Tempat</span>
+            <span v-else>Delivery</span>
+          </p>
+
+          <p>
+            <strong>Status:</strong>
+            <span class="badge bg-secondary" v-if="stateOrder.order.data.status === 0">Menunggu Pembayaran</span>
+            <span class="badge bg-warning text-dark" v-else-if="stateOrder.order.data.status === 1">Menunggu Konfirmasi</span>
+            <span class="badge bg-primary" v-else-if="stateOrder.order.data.status === 2">Sedang Diproses</span>
+            <span class="badge bg-info text-dark" v-else-if="stateOrder.order.data.status === 3">Sedang Dikirim</span>
+            <span class="badge bg-success" v-else-if="stateOrder.order.data.status === 4">Sampai di Tujuan</span>
+            <span class="badge bg-dark" v-else>Selesai</span>
+          </p>
+
+          <!-- ✅ Buttons to update status -->
+          <div class="mt-4">
+            <button v-if="stateOrder.order.data.status === 1"
+                    class="btn btn-warning me-2"
+                    @click="handleStatusChange(2)">
+              <i class="bi bi-check-circle me-1"></i> Konfirmasi Pesanan
+            </button>
+
+            <button v-if="stateOrder.order.data.status === 2"
+                    class="btn btn-primary me-2"
+                    @click="handleStatusChange(3)">
+              <i class="bi bi-box-seam me-1"></i> Sedang Dikirim
+            </button>
+
+            <!-- Input for 'Diterima oleh' when status === 3 -->
+            <div v-if="stateOrder.order.data.status === 3" class="mb-3">
+              <label for="receivedBy" class="form-label"><strong>Diterima oleh:</strong></label>
+              <input type="text"
+                    v-model="receivedBy"
+                    id="receivedBy"
+                    class="form-control"
+                    placeholder="Masukkan nama penerima" />
+            </div>
+
+            <!-- Submit button -->
+            <button v-if="stateOrder.order.data.status === 3"
+                    class="btn btn-info"
+                    @click="handleConfirmDelivery">
+              <i class="bi bi-geo-alt-fill me-1"></i> Sampai Tujuan
+            </button>
+
+            <button v-if="stateOrder.order.data.status === 4"
+                    class="btn btn-success"
+                    @click="handleStatusChange(5)">
+              <i class="bi bi-hand-thumbs-up-fill me-1"></i> Selesaikan Pesanan
+            </button>
+          </div>
         </div>
-    </body>
-
-
+      </div>
+    </div>
+  </div>
 </template>
 <script>
 import navBarInventory from '@/components/NavBarInventory.vue'
 import orderCRUD from "../modules/orderCRUD.js";
-import { onBeforeMount} from "vue";
+import { onBeforeMount, ref } from "vue";
 import { useRoute } from "vue-router";
+
 export default {
   name: "detailOrder",
   components: {
     navBarInventory,
   },
   setup() {
-    const {stateOrder , getOneOrder, updateOrder} = orderCRUD();
-    let route = useRoute();
+    const { stateOrder, getOneOrder, updateOrder } = orderCRUD();
+    const route = useRoute();
+    const receivedBy = ref("");
+
+    const handleConfirmDelivery = async () => {
+      if (!receivedBy.value.trim()) {
+        alert("Mohon isi nama penerima terlebih dahulu.");
+        return;
+      }
+      const updated = await updateOrder(stateOrder.order.data.id, 4, receivedBy.value);
+      if (updated) {
+        stateOrder.order.data = updated;
+      }
+    };
+
+    const handleStatusChange = async (newStatus) => {
+      const updated = await updateOrder(stateOrder.order.data.id, newStatus);
+      if (updated) {
+        stateOrder.order.data = updated;
+      }
+    };
 
     onBeforeMount(() => {
-        getOneOrder(route.params.id);
+      getOneOrder(route.params.id);
     });
 
-    return {stateOrder,
-        getOneOrder,
-        updateOrder
-    }
+    return {
+      stateOrder,
+      getOneOrder,
+      updateOrder,
+      receivedBy,
+      handleConfirmDelivery,
+      handleStatusChange
+    };
   },
 };
 </script>
-<style lang="">
+<style scoped>
+.card-title {
+  font-weight: bold;
+}
 </style>

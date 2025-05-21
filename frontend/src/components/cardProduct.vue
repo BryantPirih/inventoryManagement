@@ -4,7 +4,7 @@
             <!-- <img src="..." class="card-img-top" alt="..."> -->
             <div class="card-body">
                 <h5 class="card-title">{{item.name}}</h5>
-                <p class="card-text">Rp. {{item.price}}</p>
+                <p class="card-text">Rp. {{parseInt(item.price).toLocaleString('id')}}</p>
             </div>
         </div>
     </div>

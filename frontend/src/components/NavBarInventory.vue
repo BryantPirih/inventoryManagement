@@ -13,8 +13,14 @@
             <!-- sidebar -->
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                    <router-link to="/overviewWorker" class="nav-link">Overview</router-link>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            overview
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><router-link to="/overviewWorker" class="nav-link dropdown-item">Active Sales</router-link></li>
+                            <li><router-link to="/historySales" class="nav-link dropdown-item">history Sales</router-link></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                     <router-link to="/productsWorker" class="nav-link">Products</router-link>
@@ -27,6 +33,7 @@
                             <li><router-link to="/stockOpname" class="nav-link dropdown-item">Stock Opname</router-link></li>
                             <li><router-link to="/detailedProduct" class="nav-link dropdown-item">Edit/Restock Product</router-link></li>
                             <li><router-link to="/move" class="nav-link dropdown-item">Pindah Barang</router-link></li>
+                            <li><router-link to="/returnRequestList" class="nav-link dropdown-item">return request</router-link></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -34,9 +41,10 @@
                             Reporting
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Stock</a></li>
-                            <li><a class="dropdown-item" href="#">Move History</a></li>
-                            <li><a class="dropdown-item" href="#">Performance</a></li>
+                            <li><router-link to="/reportProduct" class="nav-link dropdown-item">Stock</router-link></li>
+                            <li><router-link to="/moveHistory" class="nav-link dropdown-item">Pindah Barang</router-link></li>
+                            <li><router-link to="/reportPerformance" class="nav-link dropdown-item">Performance</router-link></li>
+                            <li><router-link to="/reportStockOpname" class="nav-link dropdown-item">Stock Opname</router-link></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -46,10 +54,13 @@
                         <ul class="dropdown-menu">
                             <li><router-link to="/warehouse" class="nav-link">Warehouse</router-link></li>
                             <li><router-link to="/productCategoriesWorker" class="nav-link">Product Categories</router-link></li>
+                            <li><router-link to="/reminder" class="nav-link">Reminder</router-link></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><router-link to="/discountOverview" class="nav-link">Discount</router-link></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><router-link to="/worker" class="nav-link">Worker</router-link></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><router-link to="/uploadBanner" class="nav-link">Banner</router-link></li>
                         </ul>
                     </li>
                 </ul>
@@ -69,6 +80,8 @@ export default {
     }
 };
 </script>
-<style scoped lang="">
-    
+<style scoped>
+    .card {
+        border-radius: 12px;
+    }
 </style>

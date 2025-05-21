@@ -14,7 +14,11 @@ const getWorker =() =>{
 
     const getAllWorker = async () =>{
         try {
-            await fetch("http://localhost:3000/worker/")
+            const username = sessionStorage.getItem("username");
+            const role = sessionStorage.getItem("role");
+
+
+            await fetch(`http://localhost:3000/worker?username=${username}&role=${role}`)
             .then(res=> res.json())
             .then(data=> {
                 stateWorker.workers = data
@@ -46,9 +50,20 @@ const getWorker =() =>{
         )
     }
 
+    const getOneWorker = async (username) => {
+    try {
+      const res = await fetch(`http://localhost:3000/worker/get/${username}`)
+      const data = await res.json()
+      stateWorker.workers = data 
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
     return {
         stateWorker,
         getAllWorker,
+        getOneWorker,
         newWorker
     }
 }

@@ -1,60 +1,107 @@
-<template lang="">
-    <div>
-        <navBarInventory/>
-        <body class="container-fluid">
-            <div class="containerNew">
-                <form>
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" id="username" name="username" class="form-control" required 
-                        v-model="stateWorker.newUsername">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Name</label>
-                        <input type="text" id="name" name="name" class="form-control" required 
-                        v-model="stateWorker.newName">
-                    </div>
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Email</label>
-                        <input type="email" id="email" name="email" class="form-control" required 
-                        v-model="stateWorker.newEmail">
-                    </div>
-                    <div class="mb-3">
-                        <label for="role" class="form-label">Role</label><br>
-                        <select name="role" id="" class="form-select" v-model="stateWorker.newRole">
-                            <option value="1">Admin</option>
-                            <option value="2">Manager</option>
-                            <option value="3">Karyawan</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="mobilephone" class="form-label">Mobile Phone</label>
-                        <input type="number" id="mobile" name="mobile" class="form-control" required 
-                        v-model="stateWorker.newMobilephone">
-                    </div>
-                    <div class="mb-3">
-                        <label for="warehouse" class="form-label">Warehouse</label><br>
-                        <select name="warehouse" id="" class="form-select" v-model="stateWorker.newWarehouseId">
-                            <option v-for="item in state.warehouse" :key="item.id" 
-                            :value="item.id">{{item.warehouse}}</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Password</label>
-                        <input type="password" id="password" name="password" class="form-control" required 
-                        v-model="stateWorker.newPassword">
-                    </div>
-                    <button @click="newWorker()" type="submit" class="btn btn-success">Create</button>
-                </form>
-            </div>
-        </body>
+<template>
+  <div>
+    <navBarInventory />
+
+    <div class="container mt-4">
+      <h3 class="fw-bold mb-4">Add New Worker</h3>
+
+      <form @submit.prevent="newWorker">
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input
+            type="text"
+            id="username"
+            class="form-control"
+            required
+            v-model="stateWorker.newUsername"
+            autocomplete="username"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="name" class="form-label">Name</label>
+          <input
+            type="text"
+            id="name"
+            class="form-control"
+            required
+            v-model="stateWorker.newName"
+            autocomplete="name"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            id="email"
+            class="form-control"
+            required
+            v-model="stateWorker.newEmail"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="role" class="form-label">Role</label>
+          <select
+            id="role"
+            class="form-select"
+            required
+            v-model="stateWorker.newRole"
+          >
+            <option value="" disabled>Select a role</option>
+            <option value="1">Admin</option>
+            <option value="2">Manager</option>
+            <option value="3">Karyawan</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="mobile" class="form-label">Mobile Phone</label>
+          <input
+            type="tel"
+            id="mobile"
+            class="form-control"
+            required
+            v-model="stateWorker.newMobilephone"
+            autocomplete="tel"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="warehouse" class="form-label">Warehouse</label>
+          <select
+            id="warehouse"
+            class="form-select"
+            required
+            v-model="stateWorker.newWarehouseId"
+          >
+            <option value="" disabled>Select a warehouse</option>
+            <option v-for="item in state.warehouse" :key="item.id" :value="item.id">
+              {{ item.warehouse }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            id="password"
+            class="form-control"
+            required
+            v-model="stateWorker.newPassword"
+            autocomplete="new-password"
+          />
+        </div>
+
+        <button type="submit" class="btn btn-success">Create</button>
+      </form>
     </div>
+  </div>
 </template>
 <script>
-
-
 import navBarInventory from '@/components/NavBarInventory.vue'
 import {onMounted} from 'vue'
 import warehouseCRUD from '../modules/warehouseCRUD.js'

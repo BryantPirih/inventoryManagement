@@ -14,6 +14,7 @@ const addressSchemas = new mongoose.Schema({
     recipientName : String,
     recipientEmail : String,
     recipientPhone : Number,
+    isDefault : Number
 });
 
 module.exports = mongoose.model('address', addressSchemas);

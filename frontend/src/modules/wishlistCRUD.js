@@ -1,63 +1,99 @@
-import {reactive} from 'vue'
+import { reactive } from 'vue'
 
-const getWishlist =() =>{
-    const stateWishlist = reactive({
-        newUsername: '',
-        newProductID: '',
-        newProductName: '',
-        wishlist : {}
-    })
+const getWishlist = () => {
+  const stateWishlist = reactive({
+    newUsername: '',
+    newProductID: '',
+    newProductName: '',
+    newQuantity: 1, // Quantity default to 1
+    wishlist: {},
+    allWishlists: []
+  })
 
-    const getAllWishlist = async () =>{
-        try {
-            await fetch("http://localhost:3000/wishlist/")
-            .then(res=> res.json())
-            .then(data=> {
-                stateWishlist.cart = data
-            });
-        } catch (error) {
-            console.log(error)
-        }
+  // Fetch all wishlists (admin or user)
+  const getAllWishlist = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/wishlist/");
+      const data = await res.json();
+      stateWishlist.allWishlists = data; // Updated to store all wishlists
+    } catch (error) {
+      console.log(error);
     }
+  }
 
-    const getOneWishlist = async (username) =>{
-        try {
-            await fetch("http://localhost:3000/wishlist/get/"+username)
-            .then(res=> res.json())
-            .then(data=> {
-                stateWishlist.wishlist = data
-            });
-        } catch (error) {
-            console.log(error)
-        }
+  // Fetch one user's wishlist
+  const getOneWishlist = async (username) => {
+    try {
+      const res = await fetch(`http://localhost:3000/wishlist/get/${username}`);
+      const data = await res.json();
+      stateWishlist.wishlist = data.data; // Updated to store fetched wishlist
+    } catch (error) {
+      console.log(error);
     }
+  }
 
-    const newWishlist = () =>{
-        const request = {
-            method : "POST",
-            headers: {
-                "Content-Type" : "application/json"
-                //authtoken bisa disini
-            },
-            body: JSON.stringify({
-                username: stateWishlist.newUsername,
-                item: [{
-                    productID : stateWishlist.newProductID,
-                    productName : stateWishlist.newProductName
-                }],
-            })
-        }
-        fetch("http://localhost:3000/wishlist/new",
-        request
-        )
+  // Create new wishlist or add to existing wishlist
+  const newWishlist = async () => {
+    const request = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+        // Authtoken can go here if needed
+      },
+      body: JSON.stringify({
+        username: stateWishlist.newUsername,
+        items: [{
+          productID: stateWishlist.newProductID,
+          productName: stateWishlist.newProductName,
+          quantity: stateWishlist.newQuantity,  // Now including quantity
+        }]
+      })
     }
+    try {
+      const res = await fetch("http://localhost:3000/wishlist/new", request);
+      const data = await res.json();
+      console.log(data.message); // Display message upon successful creation
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
-    return {
-        stateWishlist,
-        getAllWishlist,
-        getOneWishlist,
-        newWishlist
+  // Update existing wishlist (change quantity or other details)
+  const updateWishlist = async (id, updatedData) => {
+    try {
+      const request = {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(updatedData)
+      };
+      await fetch(`http://localhost:3000/wishlist/update/${id}`, request);
+    } catch (error) {
+      console.log(error);
     }
+  }
+
+    // Delete wishlist for a specific user
+    const deleteWishlist = async (username) => {
+      try {
+        await fetch(`http://localhost:3000/wishlist/delete/${username}`, {
+          method: "DELETE"
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+
+  return {
+    stateWishlist,
+    getAllWishlist,
+    getOneWishlist,
+    newWishlist,
+    deleteWishlist,
+    updateWishlist
+  }
 }
 
 export default getWishlist

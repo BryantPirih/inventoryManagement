@@ -1,87 +1,101 @@
-<template lang="">
-    <div>
-        <navBarInventory/>
+<template>
+  <div>
+    <navBarInventory />
+    <div class="container mt-4">
+      <h5 class="mb-4">Create New Warehouse</h5>
+      <form @submit.prevent="newWarehouse">
+        <div class="mb-3">
+          <label for="warehouse" class="form-label">Warehouse Name</label>
+          <input
+            type="text"
+            id="warehouse"
+            name="warehouse"
+            class="form-control"
+            required
+            v-model="state.newWRHS"
+          />
+        </div>
 
-        <body class="container-fluid">
+        <!-- Province Dropdown -->
+        <div class="mb-3">
+          <label class="form-label">Province</label>
+          <v-select
+            v-model="state.newProvince"
+            :options="stateCnP.province"
+            label="province"
+            :reduce="prov => prov.province_id"
+            placeholder="Select Province"
+          />
+        </div>
 
-            <div class="containerNew">
-                <form>
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Warehouse Name</label>
-                        <input type="text" id="warehouse" name="warehouse" class="form-control" required 
-                        v-model="state.newWRHS"><br>
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Full Address</label>
-                        <input type="text" id="warehouse" name="address" class="form-control" required 
-                        v-model="state.newAddress">
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Province</label>
-                        <input type="text" id="warehouse" name="province" class="form-control" required 
-                        v-model="state.newProvince">
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">City/Kabupaten</label>
-                        <input type="text" id="warehouse" name="city" class="form-control" required 
-                        v-model="state.newCity">
-                    </div>
-                    
-                    <button @click="newWarehouse()" type="submit" class="btn btn-success">Create</button>
-                </form>
-            </div>
+        <!-- City Dropdown -->
+        <div class="mb-3">
+          <label class="form-label">City</label>
+          <v-select
+            v-model="state.newCity"
+            :options="stateCnP.city"
+            :get-option-label="cityLabel"
+            :reduce="city => city.city_id"
+            placeholder="Select City"
+          />
+        </div>
 
-        </body>
+        <div class="mb-3">
+          <label for="address" class="form-label">Full Address</label>
+          <input
+            type="text"
+            id="address"
+            name="address"
+            class="form-control"
+            required
+            v-model="state.newAddress"
+          />
+        </div>
+        <button type="submit" class="btn btn-success">Create</button>
+      </form>
     </div>
+  </div>
 </template>
+
 <script>
-
-
 import navBarInventory from '@/components/NavBarInventory.vue'
 import warehouseCRUD from '../modules/warehouseCRUD.js'
-//import {onMounted} from 'vue'
-
+import cityAndProvinceCRUD from "../modules/cityAndProvinceCRUD.js";
+import vSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
+import { onBeforeMount } from "vue";
 export default {
-    name:"newWarehouse",
-    components:{
-        navBarInventory,
-    },
-    setup(){
-        const {state, newWarehouse} = warehouseCRUD()
+  name: "newWarehouse",
+  components: {
+    navBarInventory,
+    vSelect
+  },
+  setup() {
+    const { state, newWarehouse } = warehouseCRUD()
+    const { stateCnP, getAllProvince, getAllCity } = cityAndProvinceCRUD();
 
-        return {state, newWarehouse}
-    },
-    data(){
-        return {
-        search: "",
-        options: [
-            { label: "Apple", value: "apple" },
-            { label: "Banana", value: "banana" },
-            { label: "Cherry", value: "cherry" },
-            { label: "Date", value: "date" },
-            { label: "Elderberry", value: "elderberry" }
-        ],
-        filteredOptions: []
-        };
-    },
-    methods: {
-        filterOptions() {
-        const searchTerm = this.search.toLowerCase();
-        this.filteredOptions = this.options.filter(option => 
-            option.label.toLowerCase().includes(searchTerm)
-        );
-        },
-        selectOption(option) {
-        this.search = option.label;
-        this.filteredOptions = [];
-        }
-    },
-    mounted() {
-        this.filteredOptions = this.options;
+    const cityLabel = (city) => {
+      if (!city || !city.city_name || !city.type) return '';
+      return `${city.type} ${city.city_name}`;
     }
-    
+
+    onBeforeMount(() => {
+      getAllCity()
+      getAllProvince()
+    });
+
+    return {
+      state,
+      newWarehouse,
+      stateCnP,
+      getAllCity,
+      getAllProvince,
+      cityLabel,
+    }
+  }
 }
 </script>
-<style lang="">
-    
+
+<style scoped>
+/* Add spacing if needed */
 </style>

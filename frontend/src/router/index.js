@@ -28,6 +28,26 @@ import  stockOpname from '../views/stockOpname.vue'
 import  detailedProductWorker from '../views/detailedProductWorker.vue'
 import  moveProduct from '../views/moveProduct.vue'
 import  newMove from '../views/newMove.vue'
+import  reminder from '../views/reminder.vue'
+import  newReminder from '../views/newReminder.vue'
+import  checkoutCartUser from '../views/checkoutCartUser.vue'
+import  paymentSuccess from '../views/paymentSuccess.vue'
+import  checkoutWishlistUser from '../views/checkoutWishlist.vue'
+import  userSettings from '../views/userSettings.vue'
+import  searchResults from '../views/searchResults.vue'
+import  selectedCategory from '../views/selectedCategory.vue'
+import  uploadImageProduct from '../views/uploadImageProductAdmin.vue'
+import  uploadImageProductCategories from '../views/uploadImageProductCategoriesAdmin.vue'
+import  uploadBanner from '../views/uploadBannerAdmin.vue'
+import  returnOrder from '../views/returnOrder.vue'
+import  detailReturnRequest from '../views/detailReturnRequest.vue'
+import  returnRequestList from '../views/returnRequestList.vue'
+import  returnStatus from '../views/returnStatus.vue'
+import moveHistory from '../views/moveHistoryWorkerView.vue'
+import reportProduct from '../views/reportProduct.vue'
+import reportPerformance from '../views/reportPerformance.vue'
+import reportStockOpname from '../views/reportStockOpname.vue'
+import historySales from '../views/historySales.vue'
 
 const routes = [
   {
@@ -168,6 +188,106 @@ const routes = [
     path: '/newMove',
     name: 'newMove',
     component: newMove
+  },
+  {
+    path: '/reminder',
+    name: 'reminderView',
+    component: reminder
+  },
+  {
+    path: '/newReminder',
+    name: 'newReminderView',
+    component: newReminder
+  },
+  {
+    path: '/checkoutCart',
+    name: 'checkoutCartUserView',
+    component: checkoutCartUser
+  },
+  {
+    path: '/checkoutWishlist',
+    name: 'checkoutWishlistUser',
+    component: checkoutWishlistUser
+  },
+  {
+    path: '/paymentSuccess',
+    name: 'paymentSuccessView',
+    component: paymentSuccess
+  },
+  {
+    path: '/userSettings',
+    name: 'userSettingsView',
+    component: userSettings
+  },
+  {
+    path: '/search',
+    name: 'searchResults',
+    component: searchResults
+  },
+  {
+    path: '/category/:id',
+    name: 'selectedCategory',
+    component: selectedCategory
+  },
+  {
+    path: '/uploadImageProduct',
+    name: 'UploadImageProductAdmin',
+    component: uploadImageProduct
+  },
+  {
+    path: '/uploadImageProductCategories',
+    name: 'uploadImageProductCategoriesAdmin',
+    component: uploadImageProductCategories
+  },
+  {
+    path: '/uploadBanner',
+    name: 'uploadBannerAdmin',
+    component: uploadBanner
+  },
+  {
+    path: '/returnOrder/:id',
+    name: 'returnOrder',
+    component: returnOrder
+  },
+  {
+    path: '/returnRequestList',
+    name: 'returnRequestList',
+    component: returnRequestList
+  },
+  {
+    path: '/returnRequest/:id',
+    name: 'detailReturnRequest',
+    component: detailReturnRequest
+  },
+  {
+    path: '/returnStatus',
+    name: 'returnStatus',
+    component: returnStatus
+  },
+  {
+    path: '/moveHistory',
+    name: 'moveHistory',
+    component: moveHistory
+  },
+  {
+    path: '/reportProduct',
+    name: 'reportProduct',
+    component: reportProduct
+  },
+  {
+    path: '/reportPerformance',
+    name: 'reportPerformance',
+    component: reportPerformance
+  },
+  {
+    path: '/reportStockOpname',
+    name: 'reportStockOpname',
+    component: reportStockOpname
+  },
+  {
+    path: '/historySales',
+    name: 'historySales',
+    component: historySales
   },
   {
     path: '/overviewWorker',

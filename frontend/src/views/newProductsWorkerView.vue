@@ -1,65 +1,87 @@
-<template lang="">
-    <div>
-        <navBarInventory/>
-        <body class="container-fluid">
-            <div class="containerNew">
-                <form>
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Name</label>
-                        <input type="text" id="username" name="username" class="form-control" required 
-                        v-model="stateProduct.newNameP">
-                        {{stateProduct.newNameP}}
-                    </div>
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Stock</label>
-                        <input type="text" id="name" name="name" class="form-control" required 
-                        v-model="stateProduct.newStock">
-                    </div>
+<template>
+  <div>
+    <navBarInventory />
 
-                    <div class="mb-3">
-                        <label for="warehouse" class="form-label">Warehouse</label><br>
-                        <select name="warehouse" id="" class="form-select" v-model="stateProduct.newWarehouse">
-                            <option v-for="item in state.warehouse" :key="item.id" 
-                            :value="item.id">{{item.warehouse}}</option>
-                        </select>
-                    </div>
+    <div class="container mt-4">
+      <h3 class="fw-bold mb-4">Tambah Produk Baru</h3>
 
-                    <div class="mb-3">
-                        <label for="warehouse" class="form-label">Category</label><br>
-                        <select name="warehouse" id="" class="form-select" v-model="stateProduct.newCategory">
-                            <option v-for="item in statePC.productCategories" :key="item.categoriesName" 
-                            :value="item.categoriesName">{{item.categoriesName}}</option>
-                        </select>
-                    </div>
+      <form @submit.prevent="newProduct">
+        <div class="mb-3">
+          <label class="form-label">Nama Produk</label>
+          <input
+            type="text"
+            class="form-control"
+            v-model="stateProduct.newNameP"
+            placeholder="Contoh: Toto Bathub"
+            required
+          />
+        </div>
 
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Price</label>
-                        <input type="number" id="Price" name="Price" class="form-control" required 
-                        v-model="stateProduct.newPrice">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="mobilephone" class="form-label">Description</label>
-                        <input type="text" id="Description" name="Description" class="form-control" required 
-                        v-model="stateProduct.newDesc">
-                    </div>
-                    <div class="mb-3">
-                        <label for="role" class="form-label">Status</label><br>
-                        <select name="role" id="" class="form-select" v-model="stateProduct.newStatus">
-                            <option value="1">Active</option>
-                            <option value="2">Non-Active</option>
-                        </select>
-                    </div>
+        <div class="mb-3">
+          <label class="form-label">Stok</label>
+          <input
+            type="number"
+            class="form-control"
+            v-model="stateProduct.newStock"
+            required
+          />
+        </div>
 
-                    <button @click="newProduct()" type="submit" class="btn btn-success">Create</button>
-                </form>
-            </div>
-        </body>
+        <div class="mb-3">
+          <label class="form-label">Gudang</label>
+          <select class="form-select" v-model="stateProduct.newWarehouse" required>
+            <option disabled value="">Pilih gudang</option>
+            <option v-for="item in state.warehouse" :key="item.id" :value="item.id">
+              {{ item.warehouse }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Kategori</label>
+          <select class="form-select" v-model="stateProduct.newCategory" required>
+            <option disabled value="">Pilih kategori</option>
+            <option v-for="item in statePC.productCategories" :key="item.id" :value="item.id">
+              {{ item.categoriesName }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Harga</label>
+          <input
+            type="number"
+            class="form-control"
+            v-model="stateProduct.newPrice"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Deskripsi</label>
+          <textarea
+            class="form-control"
+            rows="3"
+            v-model="stateProduct.newDesc"
+            required
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Status</label>
+          <select class="form-select" v-model="stateProduct.newStatus" required>
+            <option value="1">Aktif</option>
+            <option value="2">Tidak Aktif</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-success">Simpan Produk</button>
+      </form>
     </div>
+  </div>
 </template>
+
 <script>
-
-
 import navBarInventory from '@/components/NavBarInventory.vue'
 import {onMounted} from 'vue'
 import productCRUD from '../modules/productCRUD.js'

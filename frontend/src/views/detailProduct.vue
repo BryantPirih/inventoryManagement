@@ -1,83 +1,135 @@
-<template lang="">
-    <div>
-        <navBarUser/>
-    </div>
+<template>
+  <div>
+    <navBarUser />
 
-    <body>
-        <div class="row mt-3">
-            <div class="col-md-6">
-                <!-- <img src="" alt=""> -->
-            </div>
-            <div class="col-md-6" v-if="stateProduct.product && stateProduct.product.data">
-                <h2><strong>{{stateProduct.product.data.name}}</strong></h2>
-                <hr>
-                <h4>Rp.{{stateProduct.product.data.price}}</h4>
-                <h6>{{stateProduct.product.data.description}}</h6>
-                
-                <button v-on:click="kurangi">-</button>
-                  <input id="jumlah" name="jumlah" required v-model="stateProduct.jumlahKeranjang">
-                <button v-on:click="tambah">+</button>sisa stock:{{stateProduct.product.data.stock}}<br>
-                
-                <button @click="newCart()">+keranjang</button>
-                
-                <button @click="beli()" class="btnBeliSekarang">beli sekarang</button>
-                
-                <button @click="newWishlist()">wishlist</button><br>
-            </div>
+    <div class="container my-4">
+      <div class="row">
+        <!-- Product Image -->
+        <div class="col-md-6 d-flex justify-content-center align-items-center">
+          <img
+            :src="'http://localhost:3000' + (stateProduct.product?.data?.imageUrl || '/uploads/products/default.png')"
+            alt="Product Image"
+            style="max-height: 300px; object-fit: cover;"
+            class="img-fluid rounded shadow"
+          />
+
         </div>
-        
-        <!-- <div v-if="stateProduct.product.data">
-          {{stateProduct.product.data.name}}
-        </div> -->
-        
-    </body>
 
+        <!-- Product Info -->
+        <div class="col-md-6" v-if="stateProduct.product?.data">
+          <h2 class="fw-bold">{{ stateProduct.product.data.name }}</h2>
+          <hr>
+          <h4 class="mb-3">Rp {{ parseInt(stateProduct.product.data.price).toLocaleString('id') }}</h4>
+          <p class="text-muted">{{ stateProduct.product.data.description }}</p>
 
+          <!-- Quantity Control -->
+          <div class="d-flex align-items-center mb-3">
+            <button class="btn btn-outline-secondary" @click="kurangi">-</button>
+            <input
+              type="number"
+              v-model="stateProduct.jumlahKeranjang"
+              class="form-control mx-2"
+              style="width: 70px;"
+            />
+            <button class="btn btn-outline-secondary" @click="tambah">+</button>
+            <small class="ms-3 text-muted">
+              Sisa stok: {{ stateProduct.product.data.stock }}
+            </small>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <button @click="addCartHandler" class="btn btn-outline-success">
+              Keranjang 
+            </button>
+            <button @click="beli" class="btn btn-success">
+              Beli Sekarang
+            </button>
+            <button @click="addWishlistHandler" class="btn btn-outline-success">
+              Wishlist
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
+
 <script>
 import navBarUser from "@/components/navBarUser.vue";
 import productCRUD from "../modules/productCRUD.js";
 import cartCRUD from "../modules/cartCRUD.js";
 import wishlistCRUD from "../modules/wishlistCRUD.js";
-import { onBeforeMount, ref} from "vue";
+import { onBeforeMount } from "vue";
 import { useRoute } from "vue-router";
+
 export default {
   name: "detailProduct",
-  components: {
-    navBarUser,
-  },
-  methods: {
-    beli : function () {
-      sessionStorage.setItem('barang',this.stateProduct.product.data.id)
-      sessionStorage.setItem('qty',this.stateProduct.jumlahKeranjang)
-      this.$router.push({name:'checkoutUser'})
-    },
-    kurangi: function () {
-      this.stateProduct.jumlahKeranjang -= 1;
-    },
-    tambah: function () {
-      this.stateProduct.jumlahKeranjang += 1;
-    },
-  },
+  components: { navBarUser },
   setup() {
-    const { stateProduct, getOneProduct } = productCRUD();
+    const { stateProduct, getOneProductMainWarehouse } = productCRUD();
     const { stateCart, newCart } = cartCRUD();
     const { stateWishlist, newWishlist } = wishlistCRUD();
-    const productName = ref("")
-    
-    let route = useRoute();
+    const route = useRoute();
+
     onBeforeMount(() => {
-      getOneProduct(route.params.id);
-
-      stateCart.newUsername = sessionStorage.getItem("username");
-      stateCart.newProductID = sessionStorage.getItem("barang");
-
-      stateWishlist.newUsername = sessionStorage.getItem("username");
-      stateWishlist.newProductID = sessionStorage.getItem("barang");
+      getOneProductMainWarehouse(route.params.id);
     });
-    return { stateProduct, getOneProduct, stateCart, newCart, stateWishlist, newWishlist,productName };
-  },
+
+    const kurangi = () => {
+      if (stateProduct.jumlahKeranjang > 1) {
+        stateProduct.jumlahKeranjang--;
+      }
+    };
+
+    const tambah = () => {
+      if (stateProduct.jumlahKeranjang < stateProduct.product.data.stock) {
+        stateProduct.jumlahKeranjang++;
+      }
+    };
+
+    const beli = () => {
+      sessionStorage.setItem("barang", stateProduct.product.data.id);
+      sessionStorage.setItem("qty", stateProduct.jumlahKeranjang);
+      window.location.href = "/checkoutUser";
+    };
+
+    const addCartHandler = async () => {
+      // set the reactive stateCart fields
+      stateCart.newUsername    = sessionStorage.getItem("username");
+      stateCart.newProductID   = stateProduct.product.data.id;
+      stateCart.newProductName = stateProduct.product.data.name;
+      stateCart.newQty         = stateProduct.jumlahKeranjang;
+
+      await newCart();  // uses stateCart internally
+      alert(`Added ${stateProduct.jumlahKeranjang} × ${stateProduct.product.data.name} to cart`);
+    };
+
+    const addWishlistHandler = async () => {
+      // set the reactive stateWishlist fields
+      stateWishlist.newUsername    = sessionStorage.getItem("username");
+      stateWishlist.newProductID   = stateProduct.product.data.id;
+      stateWishlist.newProductName = stateProduct.product.data.name;
+      stateWishlist.newQuantity    = stateProduct.jumlahKeranjang; // if your crud uses it
+
+      await newWishlist();  // uses stateWishlist internally
+      alert(`Added ${stateProduct.jumlahKeranjang} × ${stateProduct.product.data.name} to wishlist`);
+    };
+
+    return {
+      stateProduct,
+      kurangi,
+      tambah,
+      beli,
+      addCartHandler,
+      addWishlistHandler
+    };
+  }
 };
 </script>
-<style lang="">
+
+<style scoped>
+img {
+  object-fit: contain;
+}
 </style>

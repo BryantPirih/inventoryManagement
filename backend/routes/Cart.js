@@ -8,34 +8,110 @@ router.get('/', async (req, res)=>{
   res.status(201).json(carts)
 });
 
-router.post('/new', async (req, res)=>{
-    try {
-        const { username, item } = req.body;
-        const id = username.toUpperCase().substring(0,1)+"C01"
+router.post('/new', async (req, res) => {
+  try {
+    const { username, item } = req.body;
+    const productID = item[0].productID;
+    const qty = item[0].qty;
 
-        const oneProduct = await Product.findOne({id : item[0].productID});
+    let cart = await Cart.findOne({ username });
 
-        const newCart = new Cart({
-            username,
-            id,
-            item : {
-                productID : item[0].productID,
-                productName : oneProduct.name,
-                qty : item[0].qty
-            }
-        });
-        await newCart.save();
-        res.status(201).json({ message: 'cart created successfully', cart: newCart });
-    } catch (error) {
-        // Handle errors
-        console.error('Error creating Product:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+    const product = await Product.findOne({ id: productID });
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // ✅ Generate unique cart ID if needed
+    if (!cart) {
+      const now = new Date();
+      const pad = (n, width) => n.toString().padStart(width, '0');
+      const id = `C${now.getFullYear()}${pad(now.getMonth() + 1, 2)}${pad(now.getDate(), 2)}${pad(now.getHours(), 2)}${pad(now.getMinutes(), 2)}${pad(now.getSeconds(), 2)}${pad(now.getMilliseconds(), 3)}`;
+
+      cart = new Cart({
+        username,
+        id,
+        item: [{
+          productID,
+          productName: product.name,
+          qty
+        }]
+      });
+      await cart.save();
+      return res.status(201).json({ message: 'Cart created', cart });
     }
+
+    // 🛒 Update existing cart
+    const existingItem = cart.item.find(i => i.productID === productID);
+
+    if (existingItem) {
+      existingItem.qty += qty;
+    } else {
+      cart.item.push({
+        productID,
+        productName: product.name,
+        qty
+      });
+    }
+
+    await cart.save();
+    res.status(200).json({ message: 'Cart updated', cart });
+
+  } catch (error) {
+    console.error('Error creating/updating cart:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
+
+
+router.put('/update/:cartId/:itemId', async (req, res) => {
+  try {
+    const { cartId, itemId } = req.params;
+    const { qty } = req.body;
+
+    if (qty < 0) {
+      return res.status(400).json({ message: 'Quantity cannot be negative' });
+    }
+
+    const cart = await Cart.findById(cartId);
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found' });
+    }
+
+    const item = cart.item.id(itemId);
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+
+    item.qty = qty;
+
+    await cart.save();
+    res.status(200).json({ message: 'Quantity updated', cart });
+  } catch (error) {
+    console.error('Error updating quantity:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 router.get('/get/:username', async (req, res)=>{
     const oneCart = await Cart.findOne({username : req.params.username});
     res.status(201).json({data : oneCart})
 });
+
+router.delete('/delete/:username', async (req, res) => {
+    const { username } = req.params;
+
+    try {
+        const result = await Cart.findOneAndDelete({ username });
+
+        if (!result) {
+            return res.status(404).json({ message: 'Cart not found for this user' });
+        }
+
+        res.status(200).json({ message: 'Cart deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting cart:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 module.exports = router;

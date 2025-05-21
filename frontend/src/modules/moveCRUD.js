@@ -1,97 +1,90 @@
-import {reactive} from 'vue'
+import { reactive } from 'vue'
 
-const getMove =() =>{
-    const stateMove = reactive({
-        newRequester: '',
-        newProduct: '',
-        newQuantity: '',
-        move : {},
-        moveProduct:{}
-    })
+const moveCRUD = () => {
+  const stateMove = reactive({
+    newRequester: '',
+    move: {},        // all moves
+    selectedMove: {}, // one move
+  })
 
-    const getAllMove = async () =>{
-        try {
-            await fetch("http://localhost:3000/move/")
-            .then(res=> res.json())
-            .then(data=> {
-                stateMove.move = data
-            });
-        } catch (error) {
-            console.log(error)
-        }
+  // ✅ Get all move headers
+  const getAllMove = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/move/");
+      const data = await res.json();
+      stateMove.move = data;
+    } catch (error) {
+      console.log("Error fetching all moves:", error);
     }
+  }
 
-    const getOneMove = async (id) =>{
-        try {
-            await fetch("http://localhost:3000/move/get/"+id)
-            .then(res=> res.json())
-            .then(data=> {
-                stateMove.move = data
-            });
-        } catch (error) {
-            console.log(error)
-        }
+  // ✅ Get one move by ID
+  const getOneMove = async (id) => {
+    try {
+      const res = await fetch("http://localhost:3000/move/get/" + id);
+      const data = await res.json();
+      stateMove.move = data;
+    } catch (error) {
+      console.log("Error fetching one move:", error);
     }
+  }
 
-    const getOneMoveProduct = async (id) =>{
-        try {
-            await fetch("http://localhost:3000/move/getMoveProduct/"+id)
-            .then(res=> res.json())
-            .then(data=> {
-                stateMove.moveProduct = data
-            });
-        } catch (error) {
-            console.log(error)
-        }
+  // ✅ Create new move (returns move object)
+  const createMove = async () => {
+    try {
+      const request = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requester: stateMove.newRequester
+        })
+      };
+      const res = await fetch("http://localhost:3000/move/new", request);
+      const data = await res.json();
+      return data.move; // ← used by UI to get move.id
+    } catch (error) {
+      console.log("Error creating move:", error);
     }
+  }
 
-    const newMove = () =>{
-        const request = {
-            method : "POST",
-            headers: {
-                "Content-Type" : "application/json"
-                //authtoken bisa disini
-            },
-            body: JSON.stringify({
-                requester: stateMove.newRequester,
-                product: stateMove.newProduct,
-                quantity: stateMove.newQuantity
-            })
-        }
-        fetch("http://localhost:3000/move/new",
-        request
-        )
-    }
+  const getMoveByUsernameWarehouse = async (username) => {
+  try {
+    const res = await fetch(`http://localhost:3000/move/byWarehouseUser/${username}`);
+    const data = await res.json();
+    stateMove.move = data;
+  } catch (error) {
+    console.log("Error fetching move list by user warehouse:", error);
+  }
+};
 
-    const updateMove = async (id,status,approver) =>{
-        try {
-            const request = {
-                method : "PUT",
-                headers: {
-                    "Content-Type" : "application/json"
-                    //authtoken bisa disini
-                },
-                body: JSON.stringify({
-                    updateStatus: status,
-                    approver: approver,
-                })
-            }
-            fetch("http://localhost:3000/move/updateMove/"+id,
-            request
-            )
-        } catch (error) {
-            console.log(error)
-        }
-    }
 
-    return {
-        stateMove,
-        newMove,
-        getAllMove,
-        getOneMove,
-        getOneMoveProduct,
-        updateMove
+  // ✅ Update move status
+  const updateMove = async (id, status, approver) => {
+    try {
+      const request = {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          updateStatus: status,
+          approver: approver,
+        })
+      };
+      const res = await fetch("http://localhost:3000/move/updateMove/" + id, request);
+      const data = await res.json();
+      return data;
+    } catch (error) {
+      console.log("Error updating move:", error);
     }
+  }
+
+  return {
+    stateMove,
+    createMove,
+    getAllMove,
+    getOneMove,
+    updateMove,
+    getMoveByUsernameWarehouse,
+  }
 }
 
-export default getMove
+export default moveCRUD;

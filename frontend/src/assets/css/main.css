@@ -4,6 +4,37 @@
     
 } */
 
+:root {
+  --brand-green: #2AD300;
+  --brand-green-hover: #25b800;
+}
+
+.btn.btn-brand {
+  background-color: var(--brand-green) !important;
+  border: 1px solid var(--brand-green) !important;
+  color: white !important;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.btn.btn-brand:hover,
+.btn.btn-brand:focus {
+  background-color: var(--brand-green-hover) !important;
+  border-color: var(--brand-green-hover) !important;
+  color: white !important;
+}
+
+.text-brand {
+  color: var(--brand-green);
+}
+
+
+.login-form input {
+    font-size: 14px;
+  }
+  
+  .login-container h2 {
+    font-weight: 600;
+  }
 
 .colorBody{
     background-color: #f8f9fa;

@@ -1,63 +1,97 @@
-<template lang="">
-    <div>
-        <navBarInventory/>
-        <body>
-            <div class="newProducts">
-                <router-link to="/newWorker" class="nav-link">
-                    <button class="btnNewWorker btn btn-success">New</button>
-                </router-link>
-                <h5 class="products">Worker</h5>
-            </div>
-            <table class="table">
-                <thead>
-                    <tr>
-                    <th scope="col">No</th>
-                    <th scope="col">Username</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Mobile phone</th>
-                    <th scope="col">Role</th>
-                    <th scope="col">Warehouse/Toko</th>
-                    </tr>
-                </thead>
-                <tbody v-for="item in stateWorker.workers" :key="item.name">
-                    <tr>
-                    <th scope="row">1</th>
-                    <td>{{item.username}}</td>
-                    <td>{{item.name}}</td>
-                    <td>{{item.email}}</td>
-                    <td>{{item.mobilePhone}}</td>
-                    <td v-if="item.role === 1">Admin</td>
-                    <td v-else-if="item.role === 2">Manager</td>
-                    <td v-else>Karyawan</td>
-                    <td>{{item.warehouseId}}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </body>
-    </div>
-</template>
-<script>
+<template>
+  <div>
+    <navBarInventory />
 
-import navBarInventory from '@/components/NavBarInventory.vue'
-import workerCRUD from '../modules/workerCRUD.js'
-import { onMounted } from 'vue'
+    <div class="d-flex align-items-center justify-content-between my-3 mx-4">
+      <h4>Worker</h4>
+      <router-link
+        to="/newWorker"
+        class="nav-link"
+        v-if="isAllowedToAdd"
+        >
+        <button class="btn btn-success">New</button>
+        </router-link>
+
+        <!-- Disabled version without routing -->
+        <button
+        class="btn btn-success disabled"
+        disabled
+        v-else
+        >
+        New
+        </button>
+    </div>
+
+    <div class="table-responsive px-4">
+      <table class="table table-striped table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>No</th>
+            <th>Username</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Mobile phone</th>
+            <th>Role</th>
+            <th>Warehouse/Toko</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in stateWorker.workers" :key="item._id">
+            <td>{{ index + 1 }}</td>
+            <td>{{ item.username }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.email }}</td>
+            <td>{{ item.mobilePhone }}</td>
+            <td>{{ getRoleName(item.role) }}</td>
+            <td>{{ item.warehouseId }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script>
+import navBarInventory from '@/components/NavBarInventory.vue';
+import workerCRUD from '../modules/workerCRUD.js';
+import { onMounted, computed } from 'vue';
 
 export default {
-    name:"workerView",
-    components:{
-        navBarInventory
-    },
-    setup(){
-        const {stateWorker, getAllWorker} = workerCRUD()
+  name: "workerView",
+  components: {
+    navBarInventory
+  },
+  setup() {
+    const { stateWorker, getAllWorker } = workerCRUD();
 
-        onMounted(()=>{
-            getAllWorker()
-        })
-        return {stateWorker, getAllWorker}
-    }
-}
+    const currentUserRole = parseInt(sessionStorage.getItem("role")); 
+
+    const isAllowedToAdd = computed(() => {
+      // Only Admins (role 1) can add new workers
+      return currentUserRole === 1;
+    });
+
+    const getRoleName = (role) => {
+      if (role === 1) return 'Admin';
+      if (role === 2) return 'Manager';
+      return 'Karyawan';
+    };
+
+    onMounted(() => {
+      getAllWorker();
+    });
+
+    return {
+      stateWorker,
+      getAllWorker,
+      isAllowedToAdd,
+      getRoleName
+    };
+  }
+};
 </script>
-<style lang="">
-    
+<style scoped>
+.table td, .table th {
+  vertical-align: middle;
+}
 </style>

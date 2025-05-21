@@ -1,44 +1,62 @@
-<template lang="">
+<template>
+  <div
+    class="border rounded shadow-sm p-3 mb-3 d-flex align-items-start bg-white"
+    :class="{ 'border-success': selectedDiscount === item.discountCode }"
+  >
+    <input
+      type="radio"
+      v-model="selectedDiscount"
+      :value="item.discountCode"
+      name="voucherSelection"
+      class="form-check-input me-3 mt-1"
+      @change="selectDiscount"
+    />
+
     <div>
-        <div class="card shadow">
-            <div class="card-body">
-                <input type="radio" v-model="selectedDiscount" :value="item.discountCode" name="metodePembayaran" @change="selectDiscount">
+      <h5 class="mb-1">{{ item.name }}</h5>
 
-                <h5 class="card-title">{{item.name}}</h5>
+      <div class="text-muted small mb-1">
+        Belanja minimal Rp.{{ parseInt(item.minimumTransaction).toLocaleString('id') }}
+      </div>
 
-                <p class="card-text">Belanja minimal Rp.{{parseInt(item.minimumTransaction).toLocaleString('id')}}</p>
+      <div class="fw-semibold text-success">
+        <template v-if="item.fixedAmountDiscount && item.percentageDiscount === 0">
+          Discount Rp.{{ parseInt(item.fixedAmountDiscount).toLocaleString('id') }}
+        </template>
 
-                <p v-if="item.fixedAmountDiscount != null && item.percentageDiscount === 0" class="card-text">
-                    Discount Rp.{{parseInt(item.fixedAmountDiscount).toLocaleString('id')}}
-                </p>
+        <template v-else-if="item.fixedAmountDiscount === 0 && item.percentageDiscount">
+          Discount {{ parseInt(item.percentageDiscount).toLocaleString('id') }}%
+        </template>
 
-                <p v-else-if="item.fixedAmountDiscount === 0 && item.percentageDiscount != 0" class="card-text">
-                    Discount {{parseInt(item.percentageDiscount).toLocaleString('id')}}% 
-                </p>
-
-                <p v-else class="card-text">
-                    Discount {{parseInt(item.percentageDiscount).toLocaleString('id')}}% Hingga Rp.{{parseInt(item.fixedAmountDiscount).toLocaleString('id')}}
-                </p>
-            </div>
-        </div>
+        <template v-else>
+          Discount {{ parseInt(item.percentageDiscount).toLocaleString('id') }}% hingga Rp.{{ parseInt(item.fixedAmountDiscount).toLocaleString('id') }}
+        </template>
+      </div>
     </div>
+  </div>
 </template>
+
 <script>
 export default {
-  name: "cardProduct",
+  name: "cardDiscount",
   props: ['item'],
   data() {
     return {
-      selectedDiscount: null, // Track the selected discount locally
+      selectedDiscount: null,
     };
   },
   methods: {
     selectDiscount() {
-      this.$emit("discount-selected", this.selectedDiscount); // Emit the selected discount to the parent
+      this.$emit("discount-selected", this.selectedDiscount);
     },
   },
 };
 </script>
-<style lang="">
-    
+
+<style scoped>
+/* Optional: add hover effect */
+.border:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
 </style>
