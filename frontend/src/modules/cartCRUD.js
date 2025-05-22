@@ -65,6 +65,24 @@ const getCart =() =>{
         }
     };
 
+    const deleteCartItem = async (username, productID) => {
+    try {
+        const response = await fetch(`https://bmp-inv-be.zenbytes.id/cart/deleteItem/${username}/${productID}`, {
+            method: "DELETE"
+        });
+
+        const data = await response.json();
+
+        // Refresh the cart after deletion
+        await getOneCart(username);
+
+        return data;
+    } catch (error) {
+        console.error("Error deleting cart item:", error);
+    }
+};
+
+
     const updateItemQty = async (cartId, itemId, newQty) => {
         try {
             const request = {
@@ -94,6 +112,7 @@ const getCart =() =>{
         getOneCart,
         newCart,
         deleteCart,
+        deleteCartItem,
         updateItemQty
     }
 }

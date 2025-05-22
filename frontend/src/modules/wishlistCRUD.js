@@ -85,12 +85,31 @@ const getWishlist = () => {
       }
     };
 
+    const deleteWishlistItem = async (username, productID) => {
+  try {
+    const res = await fetch(`https://bmp-inv-be.zenbytes.id/wishlist/deleteItem/${username}/${productID}`, {
+      method: "DELETE"
+    });
+
+    const data = await res.json();
+
+    // Refresh the wishlist to reflect the deletion
+    await getOneWishlist(username);
+
+    return data;
+  } catch (error) {
+    console.error("Error deleting wishlist item:", error);
+  }
+};
+
+
 
   return {
     stateWishlist,
     getAllWishlist,
     getOneWishlist,
     newWishlist,
+    deleteWishlistItem,
     deleteWishlist,
     updateWishlist
   }

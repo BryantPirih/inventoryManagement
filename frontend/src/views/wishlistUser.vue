@@ -14,37 +14,43 @@
               :key="item.productID"
               class="border rounded p-3 mb-3"
             >
-              <div class="d-flex">
+              <div class="d-flex justify-content-between align-items-start">
                 <!-- Product Image -->
-                <img
-                  :src="'http://localhost:3000' + getImage(item.productID)"
-                  alt="Product"
-                  width="80"
-                  height="80"
-                  class="rounded me-3"
-                  style="object-fit: cover; aspect-ratio: 1/1; background-color: #f8f9fa"
-                />
+                <div class="d-flex">
+                  <img
+                    :src="'http://localhost:3000' + getImage(item.productID)"
+                    alt="Product"
+                    width="80"
+                    height="80"
+                    class="rounded me-3"
+                    style="object-fit: cover; aspect-ratio: 1/1; background-color: #f8f9fa"
+                  />
 
-                <!-- Product Info -->
-                <div>
-                  <h5 class="mb-1">{{ item.productName }}</h5>
-                  <div class="small text-muted">Qty: {{ item.quantity }}</div>
-                  <div class="small">
-                    Status:
-                    <span
-                      :class="{
-                        'text-success': item.status === 'in-stock',
-                        'text-danger': item.status === 'out-of-stock'
-                      }"
-                    >
-                      {{ item.status === 'in-stock' ? 'Available' : 'Out of Stock' }}
-                    </span>
+                  <!-- Product Info -->
+                  <div>
+                    <h5 class="mb-1">{{ item.productName }}</h5>
+                    <div class="small text-muted">Qty: {{ item.quantity }}</div>
+                    <div class="small">
+                      Status:
+                      <span
+                        :class="{
+                          'text-success': item.status === 'in-stock',
+                          'text-danger': item.status === 'out-of-stock'
+                        }"
+                      >
+                        {{ item.status === 'in-stock' ? 'Available' : 'Out of Stock' }}
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                <!-- Delete Button -->
+                <button class="btn btn-outline-danger btn-sm" @click="deleteItemFromWishlist(item.productID)">
+                  <i class="bi bi-trash"></i> Hapus
+                </button>
               </div>
             </div>
           </template>
-
 
           <!-- Empty state -->
           <div v-else class="text-center text-muted py-5">
@@ -74,6 +80,7 @@
     </div>
   </div>
 </template>
+
 <script>
 import navBarUser from "@/components/navBarUser.vue";
 import wishlistCRUD from "../modules/wishlistCRUD.js";
@@ -85,13 +92,20 @@ export default {
   name: "wishlistUser",
   components: { navBarUser },
   setup() {
-    const { stateWishlist, getOneWishlist } = wishlistCRUD();
+    const { stateWishlist, getOneWishlist, deleteWishlistItem } = wishlistCRUD();
     const { stateProduct, getAllProductMainWarehouse } = productCRUD();
-
     const router = useRouter();
 
-     const checkoutWishlist = () => {
+    const checkoutWishlist = () => {
       router.push("/checkoutWishlist");
+    };
+
+    const deleteItemFromWishlist = async (productID) => {
+      const confirmed = confirm("Hapus item ini dari wishlist?");
+      if (!confirmed) return;
+
+      const username = stateWishlist.newUsername || sessionStorage.getItem("username");
+      await deleteWishlistItem(username, productID);
     };
 
     const getImage = (id) => {
@@ -99,14 +113,21 @@ export default {
       return p?.imageUrl || "/uploads/products/default.png";
     };
 
-    onMounted( async () => {
+    onMounted(async () => {
       const username = sessionStorage.getItem("username");
       await getAllProductMainWarehouse();
       stateWishlist.newUsername = username;
       getOneWishlist(username);
     });
 
-    return { stateWishlist,checkoutWishlist,stateProduct,getAllProductMainWarehouse,getImage };
-  }
+    return {
+      stateWishlist,
+      checkoutWishlist,
+      stateProduct,
+      getAllProductMainWarehouse,
+      getImage,
+      deleteItemFromWishlist,
+    };
+  },
 };
 </script>

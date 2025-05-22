@@ -20,14 +20,15 @@
       </div>
 
         <!-- Product Section -->
-        <div class="mb-4" v-if="stateProduct.product.data">
-          <h5 class="mb-2">Pesanan</h5>
-          <div class="border rounded p-3">
-            <h6 class="mb-1">{{ stateProduct.product.data.name }}</h6>
-            <div class="fw-bold mb-2">Rp {{ parseInt(stateProduct.product.data.price).toLocaleString('id') }}</div>
-            <div><strong>Quantity:</strong> {{ qty }}</div>
+        <div class="card p-4 mb-4 shadow-sm" v-if="stateProduct.product.data">
+          <h5 class="card-title">Ringkasan Produk</h5>
+          <div>
+            <p><strong>{{ stateProduct.product.data.name }}</strong></p>
+            <p>Harga: Rp {{ parseInt(stateProduct.product.data.price).toLocaleString('id') }}</p>
+            <p>Jumlah: {{ qty }}</p>
           </div>
         </div>
+
 
 
         <!-- Payment Method -->
@@ -130,7 +131,6 @@ export default {
         });
 
         getOneProductMainWarehouse(sessionStorage.getItem("barang"));
-        getOngkir();
         const storedDiscountCode = sessionStorage.getItem("discountCode");
         if(storedDiscountCode !== null){
             discountCode.value = storedDiscountCode;
@@ -142,32 +142,33 @@ export default {
             }
 
             if (stateDiscount.discount.data) {
+              if (
+                stateDiscount.discount.data.fixedAmountDiscount !== 0 &&
+                stateDiscount.discount.data.percentageDiscount === 0
+              ) {
+                discount.value = stateDiscount.discount.data.fixedAmountDiscount;
+              } else if (
+                stateDiscount.discount.data.fixedAmountDiscount === 0 &&
+                stateDiscount.discount.data.percentageDiscount !== 0
+              ) {
+                discount.value =
+                  (subtotal.value * stateDiscount.discount.data.percentageDiscount) / 100;
+              } else {
+                tempdiscount.value =
+                  (subtotal.value * stateDiscount.discount.data.percentageDiscount) / 100;
                 if (
-                    stateDiscount.discount.data.fixedAmountDiscount !== 0 &&
-                    stateDiscount.discount.data.percentageDiscount === 0
+                  tempdiscount.value > stateDiscount.discount.data.fixedAmountDiscount
                 ) {
-                    discount.value = stateDiscount.discount.data.fixedAmountDiscount;
-                } else if (
-                    stateDiscount.discount.data.fixedAmountDiscount === 0 &&
-                    stateDiscount.discount.data.percentageDiscount !== 0
-                ) {
-                    discount.value =
-                    (subtotal.value * stateDiscount.discount.data.percentageDiscount) /
-                    100;
+                  discount.value = stateDiscount.discount.data.fixedAmountDiscount;
                 } else {
-                    tempdiscount.value =
-                    (subtotal.value * stateDiscount.discount.data.percentageDiscount) /
-                    100;
-                    if (
-                    tempdiscount.value >
-                    stateDiscount.discount.data.fixedAmountDiscount
-                    ) {
-                        discount.value = stateDiscount.discount.data.fixedAmountDiscount;
-                    } else {
-                        discount.value = tempdiscount.value;
-                    }
+                  discount.value = tempdiscount.value;
                 }
+              }
+            } else {
+              // ✅ If no discount selected or discount data is missing
+              discount.value = 0;
             }
+
             if(stateAPI.api && stateAPI.api.rajaongkir){
                 totalPembayaran.value = (subtotal.value - discount.value) + stateAPI.api.rajaongkir.results[0].costs[1].cost[0].value
             }

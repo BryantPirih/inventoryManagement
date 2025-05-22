@@ -7,7 +7,7 @@ const Warehouse = require('../models/warehouse');
 
 router.get('/province', async (req, res) => {
     try {
-      const serverKey = process.env.RAJAONGKIR_API_Key
+      const serverKey = process.env.RAJAONGKIR_API_KEY
       const response = await axios.get('https://api.rajaongkir.com/starter/province', {
         headers: {
           key: serverKey,
@@ -78,10 +78,13 @@ router.get('/allCity', async (req, res) => {
 
 router.post('/cekOngkir', async (req, res) => {
   try {
-    const serverKey = process.env.RAJAONGKIR_API_Key;
+    const serverKey = process.env.RAJAONGKIR_API_KEY;
     const { destination } = req.body;
     const warehouse = await Warehouse.find({main : 0})
     const origin  = warehouse[0].cityId
+    console.log("origin : " + origin)
+    console.log( "destination : " + destination)
+    console.log( "serverkey : " +serverKey)
     const response = await axios.post(
       'https://api.rajaongkir.com/starter/cost',
       {

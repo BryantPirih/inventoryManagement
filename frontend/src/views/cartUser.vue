@@ -60,9 +60,10 @@
                   </div>
                 </div>
 
-                <button class="btn btn-outline-danger btn-sm ms-2" @click="deleteItem(item._id)">
+                <button class="btn btn-outline-danger btn-sm ms-2" @click="deleteItemFromCart(item.productID)">
                   <i class="bi bi-trash"></i>
                 </button>
+
               </div>
             </div>
 
@@ -98,7 +99,7 @@ import navBarUser from '@/components/navBarUser.vue'
 import cartCRUD from '../modules/cartCRUD.js'
 import productCRUD from '../modules/productCRUD.js'
 
-const { stateCart, getOneCart, deleteItem, updateItemQty } = cartCRUD()
+const { stateCart, getOneCart, deleteCartItem, updateItemQty } = cartCRUD()
 const { stateProduct, getAllProductMainWarehouse } = productCRUD()
 
 const products = reactive([])
@@ -111,10 +112,18 @@ const updateQty = async (index, newQty) => {
   // Update quantity in backend
   await updateItemQty(stateCart.cart.data._id, item._id, newQty)
 
-  // Optional: Optimistic update
+  // Optimistic update (optional)
   item.qty = newQty
 }
 
+const deleteItemFromCart = async (productID) => {
+  if (!productID || !stateCart.newUsername) return
+
+  const confirmed = confirm("Hapus item ini dari keranjang?");
+  if (!confirmed) return;
+
+  await deleteCartItem(stateCart.newUsername, productID)
+}
 
 const getProductPrice = (productId) => {
   if (!productId) return 0
@@ -123,11 +132,10 @@ const getProductPrice = (productId) => {
 }
 
 const getProductImage = (productId) => {
-  if (!productId) return null;
-  const product = products.find((p) => p.id === productId);
-  return product?.imageUrl || null;
-};
-
+  if (!productId) return null
+  const product = products.find((p) => p.id === productId)
+  return product?.imageUrl || null
+}
 
 const getTotalPrice = () => {
   if (!stateCart.cart.data?.item || !products.length) return 0
@@ -144,5 +152,4 @@ onMounted(async () => {
   await getAllProductMainWarehouse()
   products.push(...stateProduct.product)
 })
-
 </script>

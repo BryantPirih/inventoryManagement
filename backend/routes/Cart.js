@@ -113,5 +113,37 @@ router.delete('/delete/:username', async (req, res) => {
     }
 });
 
+router.delete('/deleteItem/:username/:productID', async (req, res) => {
+  const { username, productID } = req.params;
+
+  try {
+    const cart = await Cart.findOne({ username });
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found for this user' });
+    }
+
+    const initialLength = cart.item.length;
+    cart.item = cart.item.filter(i => i.productID !== productID);
+
+    if (cart.item.length === initialLength) {
+      return res.status(404).json({ message: 'Product not found in cart' });
+    }
+
+    // If no items left, you may choose to delete the entire cart
+    if (cart.item.length === 0) {
+      await Cart.deleteOne({ username });
+      return res.status(200).json({ message: 'Item deleted. Cart is now empty and removed.' });
+    }
+
+    await cart.save();
+    res.status(200).json({ message: 'Item deleted from cart', cart });
+
+  } catch (error) {
+    console.error('Error deleting item from cart:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 
 module.exports = router;

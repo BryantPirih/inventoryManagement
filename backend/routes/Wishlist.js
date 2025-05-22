@@ -100,5 +100,38 @@ router.delete('/delete/:username', async (req, res) => {
   }
 });
 
+// DELETE a single item from wishlist
+router.delete('/deleteItem/:username/:productID', async (req, res) => {
+  const { username, productID } = req.params;
+
+  try {
+    const wishlist = await Wishlist.findOne({ username });
+    if (!wishlist) {
+      return res.status(404).json({ message: 'Wishlist not found for this user' });
+    }
+
+    const initialLength = wishlist.items.length;
+    wishlist.items = wishlist.items.filter(item => item.productID !== productID);
+
+    if (wishlist.items.length === initialLength) {
+      return res.status(404).json({ message: 'Product not found in wishlist' });
+    }
+
+    // Optionally delete wishlist if it's now empty
+    if (wishlist.items.length === 0) {
+      await Wishlist.deleteOne({ username });
+      return res.status(200).json({ message: 'Item deleted. Wishlist is now empty and removed.' });
+    }
+
+    await wishlist.save();
+    res.status(200).json({ message: 'Item deleted from wishlist', wishlist });
+
+  } catch (error) {
+    console.error('Error deleting item from wishlist:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 
 module.exports = router;
