@@ -4,7 +4,6 @@
 
     <div class="container my-5">
       <h2 class="fw-bold mb-4">Detail Produk</h2>
-
       <div v-if="stateProduct.product?.data" class="card p-4 shadow-sm">
         <p><strong>ID:</strong> {{ stateProduct.product.data.id }}</p>
         <p><strong>Nama:</strong> {{ stateProduct.product.data.name }}</p>
@@ -50,7 +49,7 @@
           <div class="modal-body">
             <p><strong>ID Produk:</strong> {{ stateProduct.product.data.id }}</p>
             <p><strong>Nama Produk:</strong> {{ stateProduct.product.data.name }}</p>
-            <p><strong>Gudang:</strong> {{ stateProduct.product.data.main === 0 ? 'Gudang Utama' : 'Gudang Cabang' }}</p>
+            <p><strong>Gudang:</strong> {{ stateProduct.product.data.warehouseId }}</p>
             <div class="mb-3">
               <label class="form-label">Jumlah Restock</label>
               <input type="number" v-model="restockAmount" class="form-control" placeholder="Masukkan jumlah stok" />
@@ -228,23 +227,29 @@ export default {
       const p = stateProduct.product?.data;
       const role = parseInt(sessionStorage.getItem("role"));
       if (!p || !(role === 1 || role === 2)) {
+        console.log("masuk cek product + role")
         isConvertible.value = false;
         return;
       }
-
       try {
         const res = await fetch(`https://bmp-inv-be.zenbytes.id/productCategories/`);
         const allCategories = await res.json();
         const cat = allCategories.find(c => c.id === p.categoryId);
-
-        isConvertible.value = cat &&
-          cat.unitConversion !== "-" &&
+        if (
+          cat &&
+          !["", "-", null, undefined].includes(cat.unitConversion?.trim()) &&
           cat.conversionRate &&
-          p.stock >= 1;
+          p.stock >= 1
+        ) {
+          isConvertible.value = true;
+        } else {
+          isConvertible.value = false;
+        }
       } catch (err) {
         console.error("Error checking convertibility:", err);
         isConvertible.value = false;
       }
+
     };
 
     onBeforeMount(async () => {
