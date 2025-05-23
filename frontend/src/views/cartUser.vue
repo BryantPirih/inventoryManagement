@@ -14,7 +14,7 @@
                 :key="index"
               >
                 <img
-                  :src="'http://localhost:3000' + (getProductImage(item.productID) || '/uploads/products/default.png')"
+                  :src="'https://bmp-inv-be.zenbytes.id' + (getProductImage(item.productID) || '/uploads/products/default.png')"
                   class="rounded"
                   width="80"
                   height="80"

@@ -19,7 +19,7 @@
           >
             <div class="card h-100 shadow-sm">
               <img
-                :src="'http://localhost:3000' + (product.imageUrl || '/uploads/products/default.png')"
+                :src="'https://bmp-inv-be.zenbytes.id' + (product.imageUrl || '/uploads/products/default.png')"
                 class="card-img-top"
                 alt="Product Image"
                 style="height: 200px; object-fit: cover"

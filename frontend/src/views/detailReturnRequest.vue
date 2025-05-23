@@ -9,7 +9,7 @@
           <div class="d-flex flex-column flex-md-row">
             <img
               v-if="request.mediaUrl"
-              :src="'http://localhost:3000' + request.mediaUrl"
+              :src="'https://bmp-inv-be.zenbytes.id' + request.mediaUrl"
               alt="Bukti Retur"
               class="me-4 mb-3 mb-md-0"
               style="width: 200px; object-fit: contain;"

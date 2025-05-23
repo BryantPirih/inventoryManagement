@@ -13,7 +13,7 @@ require('dotenv').config();
 // Middleware
 app.use(cors({
   credentials : true,
-  origin : ['http://localhost:3000' , 'http://localhost:8080' , 'http://localhost:4200' , 'https://inventory.zenbytes.id']
+  origin : ['http://localhost:3000' , 'http://localhost:8080' , 'https://bmp-inv-be.zenbytes.id' , 'https://inventory.zenbytes.id']
 }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(cookieParser());
@@ -99,6 +99,9 @@ app.use('/returnRequest/',returnRequest)
 
 const stockOpname = require('./routes/StockOpname.js')
 app.use('/stockOpname/',stockOpname)
+
+const delivery = require('./routes/Deliveries.js');
+app.use('/delivery/', delivery);
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 

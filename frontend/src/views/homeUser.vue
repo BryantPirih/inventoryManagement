@@ -14,7 +14,7 @@
             :key="index"
           >
             <img
-              :src="'http://localhost:3000' + banner.imageUrl"
+              :src="'https://bmp-inv-be.zenbytes.id' + banner.imageUrl"
               class="d-block w-100 banner-img"
               alt="Banner"
             />
@@ -43,7 +43,7 @@
         >
           <div class="rounded-circle overflow-hidden border" style="width: 90px; height: 90px;">
             <img
-              :src="'http://localhost:3000' + (cat.iconUrl || '/uploads/productCategories/default.png')"
+              :src="'https://bmp-inv-be.zenbytes.id' + (cat.iconUrl || '/uploads/productCategories/default.png')"
               alt="Category Icon"
               style="width: 100%; height: 100%; object-fit: cover;"
             />
@@ -64,7 +64,7 @@
           >
             <div class="card h-100 shadow-sm">
               <img
-                :src="'http://localhost:3000' + (item.imageUrl || '/uploads/products/default.png')"
+                :src="'https://bmp-inv-be.zenbytes.id' + (item.imageUrl || '/uploads/products/default.png')"
                 class="card-img-top"
                 alt="Product Image"
                 style="height: 150px; object-fit: cover;"

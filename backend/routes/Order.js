@@ -45,31 +45,46 @@ router.post('/new', async (req, res) => {
     const pad = (n, width) => n.toString().padStart(width, '0');
     const id = `O${now.getFullYear()}${pad(now.getMonth() + 1, 2)}${pad(now.getDate(), 2)}${pad(now.getHours(), 2)}${pad(now.getMinutes(), 2)}${pad(now.getSeconds(), 2)}${pad(now.getMilliseconds(), 3)}`;
 
-    // ✅ Determine warehouseId from worker (based on username)
+    // 📦 Determine warehouseId
     const mainWarehouse = await Warehouse.findOne({ main: 0 });
-    const warehouseId = mainWarehouse?.id || "WH1"; // fallback just in case
+    const warehouseId = mainWarehouse?.id || "WH1";
+
+    // 🧾 Add price + total per item
+    const enrichedItems = await Promise.all(items.map(async (item) => {
+      const product = await Product.findOne({ id: item.productId });
+      const price = product?.price || 0;
+      const quantity = parseInt(item.quantity);
+      return {
+        productId: item.productId,
+        productName: item.productName,
+        quantity,
+        price,
+        total: price * quantity
+      };
+    }));
 
     const newOrder = new Order({
       id,
       username,
-      items,
+      items: enrichedItems,
       paymentMethod,
       deliveryMethod,
       orderDate,
       status,
       discountCode,
       totalPayment,
-      warehouseId, // ✅ added
+      warehouseId,
       notifiedStatuses: [],
       receivedBy: username,
-      deliveredDate: orderDate // optional, matches orderDate
+      deliveredDate: orderDate,
+      deliveryId: null  // leave null, will update after delivery creation
     });
 
     await newOrder.save();
 
-    // Reduce stock if COD
+    // 🧮 Reduce stock if COD
     if (status === 1) {
-      for (const item of items) {
+      for (const item of enrichedItems) {
         await Product.updateOne(
           { id: item.productId },
           { $inc: { stock: -item.quantity } }
@@ -77,10 +92,31 @@ router.post('/new', async (req, res) => {
       }
     }
 
-    res.status(201).json({ message: 'order created successfully', order: newOrder });
+    res.status(201).json({ message: 'Order created successfully', order: newOrder });
   } catch (error) {
     console.error('Error creating order:', error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// ✅ PUT /order/update/:id → add deliveryId after delivery is created
+router.put('/update/:id', async (req, res) => {
+  const { id } = req.params;
+  const { deliveryId } = req.body;
+
+  try {
+    const updated = await Order.findOneAndUpdate(
+      { id },
+      { $set: { deliveryId } },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ error: "Order not found" });
+
+    res.status(200).json({ message: "Delivery ID added", order: updated });
+  } catch (err) {
+    console.error("Error updating order with deliveryId:", err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 

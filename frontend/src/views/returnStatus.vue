@@ -11,7 +11,7 @@
               <!-- Image Preview -->
               <img
                 v-if="item.mediaUrl"
-                :src="'http://localhost:3000' + item.mediaUrl"
+                :src="'https://bmp-inv-be.zenbytes.id' + item.mediaUrl"
                 alt="Bukti Retur"
                 class="me-3"
                 style="width: 120px; height: auto; object-fit: contain;"

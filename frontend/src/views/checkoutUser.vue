@@ -91,6 +91,8 @@ import navBarUser from "@/components/navBarUser.vue";
 import addressCRUD from "../modules/addressCRUD.js";
 import productCRUD from "../modules/productCRUD.js";
 import discountCRUD from "../modules/discountCRUD.js";
+import deliveryCRUD from "../modules/deliveryCRUD.js";
+import orderCRUD from "../modules/orderCRUD.js";
 import extAPI from "../modules/extAPI.js";
 import axios from 'axios'
 import { watchEffect } from "vue";
@@ -104,6 +106,8 @@ export default {
     const { stateAddress, getOneAddress } = addressCRUD();
     const { stateProduct, getOneProductMainWarehouse } = productCRUD();
     const { stateDiscount, getOneDiscount } = discountCRUD();
+    const { createDelivery } = deliveryCRUD();
+    const { updateOrderDeliveryId } = orderCRUD();
     const { stateAPI, getOngkir } = extAPI();
     const discountCode = ref("")
     const qty = ref("")
@@ -178,13 +182,17 @@ export default {
 
     const bayar = async () => {
       try {
-        // Prepare the order payload
+        const quantity = parseInt(sessionStorage.getItem("qty"));
+
+        // Step 1: Create order with price + total
         const orderPayload = {
           username: sessionStorage.getItem('username'),
           items: [{
-            productId: stateProduct.product.data.id,  // Use product id from state
-            productName: stateProduct.product.data.name,  // Use product name from state
-            quantity: sessionStorage.getItem('qty')  // Use quantity from session storage
+            productId: stateProduct.product.data.id,
+            productName: stateProduct.product.data.name,
+            quantity,
+            price: stateProduct.product.data.price,
+            total: stateProduct.product.data.price * quantity
           }],
           paymentMethod: pick.value,
           deliveryMethod: 1,
@@ -192,60 +200,67 @@ export default {
           totalPayment: totalPembayaran.value
         };
 
-        // Create the order
-        const orderResult = await axios.post('https://bmp-inv-be.zenbytes.id/order/new', orderPayload, {
-          headers: { 'Content-type': 'application/json' },
-          credentials: 'include'
+        const orderResult = await axios.post("https://bmp-inv-be.zenbytes.id/order/new", orderPayload, {
+          headers: { "Content-type": "application/json" },
+          credentials: "include"
         });
 
-        if (orderResult.status === 201) {
-          if (pick.value === 0) {
-            // For COD, the order status is set to 1 in the backend, so we just need to handle the redirect
-            alert("Pembayaran diterima. Pesanan akan segera diproses.");
-            sessionStorage.removeItem('qty');
-            sessionStorage.removeItem('barang');
-            sessionStorage.removeItem('discountCode');
-            window.location.href = '/paymentSuccess';  // Redirect after COD
-          } else {
-            // For Payment Gateway, send to Midtrans for payment
-            const response = await axios.post('https://bmp-inv-be.zenbytes.id/midtrans/createTransaction', {
-              order_id: orderResult.data.order.id,
-              gross_amount: orderResult.data.order.totalPayment,
-              customer_details: {
-                first_name: sessionStorage.getItem('username'), // Pass username as first name
-                email: "test@example.com", // Optional: Fetch real email if available
-                phone: "08123456789" // Optional: Fetch real phone if available
-              }
-            });
+        // Step 2: Create delivery from defaultAddress
+        const orderId = orderResult.data.order.id;
+        const deliveryPayload = {
+          orderId,
+          ...defaultAddress.value
+        };
 
-            const token = response.data.token;
+        
+        const delivery = await createDelivery(deliveryPayload);
 
-            // Trigger the Snap payment popup
-            window.snap.pay(token, {
-              onSuccess: async (paymentResult) => {
-                await axios.put(`https://bmp-inv-be.zenbytes.id/order/updateStatusAfterPayment/${orderResult.data.order.id}`);
-                sessionStorage.removeItem('qty');
-                sessionStorage.removeItem('barang');
-                sessionStorage.removeItem('discountCode');
-                console.log('Payment Success:', paymentResult);
-                window.location.href = '/paymentSuccess';  // Redirect after payment success
-              },
-              onPending: (paymentResult) => {
-                console.log('Payment Pending:', paymentResult);
-              },
-              onError: (paymentResult) => {
-                console.error('Payment Error:', paymentResult);
-              }
-            });
-          }
+        // Step 3: Update order with deliveryId
+        await updateOrderDeliveryId(orderId, delivery.id);
+
+        // Step 4: Payment logic
+        if (pick.value === 0) {
+          alert("Pembayaran diterima. Pesanan akan segera diproses.");
+          sessionStorage.removeItem('qty');
+          sessionStorage.removeItem('barang');
+          sessionStorage.removeItem('discountCode');
+          window.location.href = '/paymentSuccess';
         } else {
-          alert(orderResult.data.message);
+          const response = await axios.post("https://bmp-inv-be.zenbytes.id/midtrans/createTransaction", {
+            order_id: orderId,
+            gross_amount: orderResult.data.order.totalPayment,
+            customer_details: {
+              first_name: sessionStorage.getItem("username"),
+              email: "test@example.com",
+              phone: "08123456789"
+            }
+          });
+
+          const token = response.data.token;
+
+          window.snap.pay(token, {
+            onSuccess: async (paymentResult) => {
+              await axios.put(`https://bmp-inv-be.zenbytes.id/order/updateStatusAfterPayment/${orderId}`);
+              sessionStorage.removeItem("qty");
+              sessionStorage.removeItem("barang");
+              sessionStorage.removeItem("discountCode");
+              console.log("Payment Success:", paymentResult);
+              window.location.href = "/paymentSuccess";
+            },
+            onPending: (paymentResult) => {
+              console.log("Payment Pending:", paymentResult);
+            },
+            onError: (paymentResult) => {
+              console.error("Payment Error:", paymentResult);
+            }
+          });
         }
       } catch (error) {
         console.error(error);
-        alert(error.response?.data?.message || 'Gagal memproses pembayaran');
+        alert(error.response?.data?.message || "Gagal memproses pembayaran");
       }
     };
+
 
 
 

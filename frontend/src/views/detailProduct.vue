@@ -7,7 +7,7 @@
         <!-- Product Image -->
         <div class="col-md-6 d-flex justify-content-center align-items-center">
           <img
-            :src="'http://localhost:3000' + (stateProduct.product?.data?.imageUrl || '/uploads/products/default.png')"
+            :src="'https://bmp-inv-be.zenbytes.id' + (stateProduct.product?.data?.imageUrl || '/uploads/products/default.png')"
             alt="Product Image"
             style="max-height: 300px; object-fit: cover;"
             class="img-fluid rounded shadow"

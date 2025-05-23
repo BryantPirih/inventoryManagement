@@ -83,6 +83,8 @@ import navBarUser from "@/components/navBarUser.vue";
 import addressCRUD from "../modules/addressCRUD.js";
 import productCRUD from "../modules/productCRUD.js";
 import discountCRUD from "../modules/discountCRUD.js";
+import deliveryCRUD from "../modules/deliveryCRUD.js";
+import orderCRUD from "../modules/orderCRUD.js";
 import cartCRUD from "../modules/cartCRUD.js";
 import extAPI from "../modules/extAPI.js";
 import axios from 'axios'
@@ -98,6 +100,8 @@ export default {
     const { stateProduct, getAllProductMainWarehouse } = productCRUD();
     const { stateDiscount, getOneDiscount } = discountCRUD();
     const { stateCart, getOneCart , deleteCart } = cartCRUD();
+    const { createDelivery } = deliveryCRUD();
+    const { updateOrderDeliveryId } = orderCRUD();
     const { stateAPI, getOngkir } = extAPI();
     const discountCode = ref("")
     const qty = ref("")
@@ -186,14 +190,22 @@ export default {
 
       try {
         const username = sessionStorage.getItem('username');
-        const cartItems = stateCart.cart.data.item.map(item => ({
-          productId: item.productID,
-          productName: item.productName,
-          quantity: item.qty
-        }));
 
+        // Step 1: Prepare order items with current prices
+        const cartItems = stateCart.cart.data.item.map(item => {
+          const price = getProductPrice(item.productID);
+          return {
+            productId: item.productID,
+            productName: item.productName,
+            quantity: item.qty,
+            price,
+            total: price * item.qty
+          };
+        });
+
+        // Step 2: Create order
         const orderPayload = {
-          username: username,
+          username,
           items: cartItems,
           paymentMethod: pick.value,
           deliveryMethod: 1,
@@ -206,23 +218,31 @@ export default {
           credentials: 'include'
         });
 
+        const orderId = orderResult.data.order.id;
+
+        // Step 3: Create delivery
+        const deliveryPayload = {
+          orderId,
+          ...defaultAddress.value
+        };
+        const delivery = await createDelivery(deliveryPayload);
+
+        // Step 4: Update order with deliveryId
+        
+        await updateOrderDeliveryId(orderId, delivery.id);
+
+        // Step 5: Handle payment
         if (pick.value === 0) {
-          // Cash / COD
-          if (orderResult.status === 201) {
-            sessionStorage.removeItem('discountCode');
-            await cartCRUD().deleteCart(username);  
-            alert("Pembayaran diterima. Pesanan akan segera diproses.");
-            window.location.href = '/paymentSuccess';  
-          } else {
-            alert(orderResult.data.message);
-          }
+          sessionStorage.removeItem('discountCode');
+          await deleteCart(username);
+          alert("Pembayaran diterima. Pesanan akan segera diproses.");
+          window.location.href = '/paymentSuccess';
         } else {
-          // Midtrans Online Payment
           const midtransResponse = await axios.post('https://bmp-inv-be.zenbytes.id/midtrans/createTransaction', {
-            order_id: orderResult.data.order.id,
+            order_id: orderId,
             gross_amount: orderResult.data.order.totalPayment,
             customer_details: {
-              first_name: username, // or fetch from your user DB
+              first_name: username,
               email: "test@example.com",
               phone: "08123456789"
             }
@@ -231,9 +251,9 @@ export default {
           const token = midtransResponse.data.token;
           window.snap.pay(token, {
             onSuccess: async (result) => {
-              await axios.put(`https://bmp-inv-be.zenbytes.id/order/updateStatusAfterPayment/${orderResult.data.order.id}`);
+              await axios.put(`https://bmp-inv-be.zenbytes.id/order/updateStatusAfterPayment/${orderId}`);
               sessionStorage.removeItem('discountCode');
-              await cartCRUD().deleteCart(username);  // Delete cart
+              await deleteCart(username);
               console.log('Payment Success:', result);
               window.location.href = '/paymentSuccess';
             },
@@ -250,6 +270,7 @@ export default {
         alert(error.response?.data?.message || 'Gagal memproses pembayaran');
       }
     };
+
 
 
 

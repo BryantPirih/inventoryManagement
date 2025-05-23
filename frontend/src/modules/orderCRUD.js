@@ -65,11 +65,24 @@ const getOrder =() =>{
         }
     };
 
+    const updateOrderDeliveryId = async (id, deliveryId) => {
+        try {
+            const res = await axios.put(`https://bmp-inv-be.zenbytes.id/order/update/${id}`, {
+            deliveryId,
+            });
+            return res.data;
+        } catch (error) {
+            console.log("Error updating delivery ID:", error);
+        }
+    };
+
+
 
     return {
         stateOrder,
         getAllOrder,
         getAllOrderUser,
+        updateOrderDeliveryId,
         getOneOrder,
         getHistoryOrders,
         updateOrder

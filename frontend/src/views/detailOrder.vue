@@ -1,16 +1,17 @@
 <template>
   <div>
     <navBarInventory />
+    
     <div class="container mt-4" v-if="stateOrder.order && stateOrder.order.data">
       <div class="card shadow">
         <div class="card-body">
           <h3 class="card-title">Detail Order</h3>
           <h5 class="text-muted">Order ID: <strong>{{ stateOrder.order.data.id }}</strong></h5>
           <hr>
-
+          
           <p><strong>Pembeli:</strong> {{ stateOrder.order.data.username }}</p>
 
-          <!-- ✅ Loop over all ordered items -->
+          <!-- ✅ Ordered Items -->
           <div v-for="(item, index) in stateOrder.order.data.items" :key="index" class="mb-3 border-start ps-3 border-2">
             <p><strong>Product ID:</strong> {{ item.productId }}</p>
             <p><strong>Product Name:</strong> {{ item.productName }}</p>
@@ -25,6 +26,17 @@
             <span v-else>Delivery</span>
           </p>
 
+          <!-- ✅ Delivery Details -->
+          <div v-if="stateDelivery.delivery && stateOrder.order.data.deliveryMethod === 1">
+            <h5 class="mt-4">Detail Pengiriman</h5>
+            <p><strong>Alamat:</strong> {{ stateDelivery.delivery.fullAddress }}</p>
+            <p><strong>Kelurahan:</strong> {{ stateDelivery.delivery.subDistrict }}</p>
+            <p><strong>Kecamatan:</strong> {{ stateDelivery.delivery.district }}</p>
+            <p><strong>Kota:</strong> {{ stateDelivery.delivery.city }}</p>
+            <p><strong>Provinsi:</strong> {{ stateDelivery.delivery.province }}</p>
+            <p><strong>Kode Pos:</strong> {{ stateDelivery.delivery.postalCode }}</p>
+          </div>
+
           <p>
             <strong>Status:</strong>
             <span class="badge bg-secondary" v-if="stateOrder.order.data.status === 0">Menunggu Pembayaran</span>
@@ -35,7 +47,7 @@
             <span class="badge bg-dark" v-else>Selesai</span>
           </p>
 
-          <!-- ✅ Buttons to update status -->
+          <!-- Status Action Buttons -->
           <div class="mt-4">
             <button v-if="stateOrder.order.data.status === 1"
                     class="btn btn-warning me-2"
@@ -49,7 +61,7 @@
               <i class="bi bi-box-seam me-1"></i> Sedang Dikirim
             </button>
 
-            <!-- Input for 'Diterima oleh' when status === 3 -->
+            <!-- Diterima oleh -->
             <div v-if="stateOrder.order.data.status === 3" class="mb-3">
               <label for="receivedBy" class="form-label"><strong>Diterima oleh:</strong></label>
               <input type="text"
@@ -59,7 +71,6 @@
                     placeholder="Masukkan nama penerima" />
             </div>
 
-            <!-- Submit button -->
             <button v-if="stateOrder.order.data.status === 3"
                     class="btn btn-info"
                     @click="handleConfirmDelivery">
@@ -77,9 +88,11 @@
     </div>
   </div>
 </template>
+
 <script>
-import navBarInventory from '@/components/NavBarInventory.vue'
+import navBarInventory from '@/components/NavBarInventory.vue';
 import orderCRUD from "../modules/orderCRUD.js";
+import deliveryCRUD from "../modules/deliveryCRUD.js";
 import { onBeforeMount, ref } from "vue";
 import { useRoute } from "vue-router";
 
@@ -90,6 +103,7 @@ export default {
   },
   setup() {
     const { stateOrder, getOneOrder, updateOrder } = orderCRUD();
+    const { stateDelivery, getDeliveryByOrderId } = deliveryCRUD();
     const route = useRoute();
     const receivedBy = ref("");
 
@@ -111,8 +125,11 @@ export default {
       }
     };
 
-    onBeforeMount(() => {
-      getOneOrder(route.params.id);
+    onBeforeMount(async () => {
+      await getOneOrder(route.params.id);
+      if (stateOrder.order?.data?.deliveryId) {
+        await getDeliveryByOrderId(stateOrder.order.data.id);
+      }
     });
 
     return {
@@ -121,11 +138,13 @@ export default {
       updateOrder,
       receivedBy,
       handleConfirmDelivery,
-      handleStatusChange
+      handleStatusChange,
+      stateDelivery
     };
   },
 };
 </script>
+
 <style scoped>
 .card-title {
   font-weight: bold;

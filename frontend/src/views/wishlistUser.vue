@@ -18,7 +18,7 @@
                 <!-- Product Image -->
                 <div class="d-flex">
                   <img
-                    :src="'http://localhost:3000' + getImage(item.productID)"
+                    :src="'https://bmp-inv-be.zenbytes.id' + getImage(item.productID)"
                     alt="Product"
                     width="80"
                     height="80"

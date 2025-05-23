@@ -84,28 +84,32 @@ import addressCRUD from "../modules/addressCRUD.js";
 import productCRUD from "../modules/productCRUD.js";
 import discountCRUD from "../modules/discountCRUD.js";
 import wishlistCRUD from "../modules/wishlistCRUD.js";
+import deliveryCRUD from "../modules/deliveryCRUD.js";
+import orderCRUD from "../modules/orderCRUD.js";
 import extAPI from "../modules/extAPI.js";
 import axios from 'axios'
 import { watchEffect } from "vue";
 import  {onBeforeMount, ref}  from "vue";
+
 export default {
   name: "checkoutWishlistUser",
-  components: {
-    navBarUser,
-  },
+  components: { navBarUser },
   setup() {
     const { stateAddress, getOneAddress } = addressCRUD();
     const { stateProduct, getAllProductMainWarehouse } = productCRUD();
     const { stateDiscount, getOneDiscount } = discountCRUD();
-    const { stateWishlist, getOneWishlist , deleteWishlist } = wishlistCRUD();
+    const { stateWishlist, getOneWishlist, deleteWishlist } = wishlistCRUD();
+    const { createDelivery } = deliveryCRUD();
+    const { updateOrderDeliveryId } = orderCRUD();
     const { stateAPI, getOngkir } = extAPI();
-    const discountCode = ref("")
-    const qty = ref("")
-    const subtotal = ref("")
-    const tempdiscount = ref("")
-    const discount = ref("")
-    const totalPembayaran = ref("")
-    const pick = ref(null)
+
+    const discountCode = ref("");
+    const qty = ref("");
+    const subtotal = ref("");
+    const tempdiscount = ref("");
+    const discount = ref("");
+    const totalPembayaran = ref("");
+    const pick = ref(null);
     const defaultAddress = ref(null);
 
     const getProductPrice = (productID) => {
@@ -124,74 +128,78 @@ export default {
     document.head.appendChild(script);
 
     onBeforeMount(() => {
-        qty.value = sessionStorage.getItem("qty")
-        stateAddress.newUsername = sessionStorage.getItem("username");
-        getOneAddress(stateAddress.newUsername);
-        watchEffect(() => {
-          if (stateAddress.address && stateAddress.address.cityID) {
-            defaultAddress.value = stateAddress.address;
-            getOngkir(defaultAddress.value.cityID);
-          }
-        });
-        
-        getOneWishlist(sessionStorage.getItem("username"));
-        getAllProductMainWarehouse();
-        const storedDiscountCode = sessionStorage.getItem("discountCode");
-        if(storedDiscountCode !== null){
-            discountCode.value = storedDiscountCode;
+      qty.value = sessionStorage.getItem("qty");
+      stateAddress.newUsername = sessionStorage.getItem("username");
+      getOneAddress(stateAddress.newUsername);
+      getOneWishlist(sessionStorage.getItem("username"));
+      getAllProductMainWarehouse();
+
+      watchEffect(() => {
+        if (stateAddress.address && stateAddress.address.cityID) {
+          defaultAddress.value = stateAddress.address;
+          getOngkir(defaultAddress.value.cityID);
         }
-        getOneDiscount(discountCode.value);
-        watchEffect(() => {
-          // Ensure products and cart are ready
-          if (Array.isArray(stateProduct.product) && Array.isArray(stateWishlist.wishlist.items)) {
-            let tempSubtotal = 0;
-            stateWishlist.wishlist.items.forEach(item => {
-              const product = stateProduct.product.find(p => p.id === item.productID);
-              if (product) {
-                tempSubtotal += product.price * item.quantity;
-              }
-            });
-            subtotal.value = tempSubtotal;
-          }
+      });
 
-          // Handle discount logic
-          if (stateDiscount.discount.data) {
-            const disc = stateDiscount.discount.data;
-            const percentage = (subtotal.value * disc.percentageDiscount) / 100;
-            if (disc.fixedAmountDiscount !== 0 && disc.percentageDiscount === 0) {
-              discount.value = disc.fixedAmountDiscount;
-            } else if (disc.fixedAmountDiscount === 0 && disc.percentageDiscount !== 0) {
-              discount.value = percentage;
-            } else {
-              discount.value = Math.min(percentage, disc.fixedAmountDiscount);
+      const storedDiscountCode = sessionStorage.getItem("discountCode");
+      if (storedDiscountCode !== null) {
+        discountCode.value = storedDiscountCode;
+      }
+      getOneDiscount(discountCode.value);
+
+      watchEffect(() => {
+        if (Array.isArray(stateProduct.product) && Array.isArray(stateWishlist.wishlist.items)) {
+          let tempSubtotal = 0;
+          stateWishlist.wishlist.items.forEach(item => {
+            const product = stateProduct.product.find(p => p.id === item.productID);
+            if (product) {
+              tempSubtotal += product.price * item.quantity;
             }
+          });
+          subtotal.value = tempSubtotal;
+        }
+
+        if (stateDiscount.discount.data) {
+          const disc = stateDiscount.discount.data;
+          const percentage = (subtotal.value * disc.percentageDiscount) / 100;
+          if (disc.fixedAmountDiscount !== 0 && disc.percentageDiscount === 0) {
+            discount.value = disc.fixedAmountDiscount;
+          } else if (disc.fixedAmountDiscount === 0 && disc.percentageDiscount !== 0) {
+            discount.value = percentage;
           } else {
-            discount.value = 0;
+            discount.value = Math.min(percentage, disc.fixedAmountDiscount);
           }
+        } else {
+          discount.value = 0;
+        }
 
-          // If ongkir not available yet, fallback to 0
-          const ongkir = stateAPI.api?.rajaongkir?.results?.[0]?.costs?.[1]?.cost?.[0]?.value || 0;
-
-          totalPembayaran.value = subtotal.value - discount.value + ongkir;
-        });
+        const ongkir = stateAPI.api?.rajaongkir?.results?.[0]?.costs?.[1]?.cost?.[0]?.value || 0;
+        totalPembayaran.value = subtotal.value - discount.value + ongkir;
+      });
     });
 
     const bayar = async () => {
       if (!Array.isArray(stateWishlist.wishlist.items) || stateWishlist.wishlist.items.length === 0) {
-        alert("wishlist tidak valid atau kosong.");
+        alert("Wishlist tidak valid atau kosong.");
         return;
       }
 
-      try { 
-        const username = sessionStorage.getItem('username');
-        const wishlistItems = stateWishlist.wishlist.items.map(item => ({
-          productId: item.productID,
-          productName: item.productName,
-          quantity: item.quantity
-        }));
+      try {
+        const username = sessionStorage.getItem("username");
+
+        const wishlistItems = stateWishlist.wishlist.items.map(item => {
+          const price = getProductPrice(item.productID);
+          return {
+            productId: item.productID,
+            productName: item.productName,
+            quantity: item.quantity,
+            price,
+            total: price * item.quantity
+          };
+        });
 
         const orderPayload = {
-          username: username,
+          username,
           items: wishlistItems,
           paymentMethod: pick.value,
           deliveryMethod: 1,
@@ -200,27 +208,26 @@ export default {
         };
 
         const orderResult = await axios.post("https://bmp-inv-be.zenbytes.id/order/new", orderPayload, {
-          headers: { 'Content-type': 'application/json' },
-          credentials: 'include'
+          headers: { "Content-type": "application/json" },
+          credentials: "include"
         });
 
+        const orderId = orderResult.data.order.id;
+        const deliveryPayload = { orderId, ...defaultAddress.value };
+        const delivery = await createDelivery(deliveryPayload);
+        await updateOrderDeliveryId(orderId, delivery.id);
+
         if (pick.value === 0) {
-          // Cash / COD
-          if (orderResult.status === 201) {
-            sessionStorage.removeItem('discountCode');
-            await wishlistCRUD().deleteWishlist(username);  
-            alert("Pembayaran diterima. Pesanan akan segera diproses.");
-            window.location.href = '/paymentSuccess';  
-          } else {
-            alert(orderResult.data.message);
-          }
+          sessionStorage.removeItem('discountCode');
+          await deleteWishlist(username);
+          alert("Pembayaran diterima. Pesanan akan segera diproses.");
+          window.location.href = '/paymentSuccess';
         } else {
-          // Midtrans Online Payment
           const midtransResponse = await axios.post('https://bmp-inv-be.zenbytes.id/midtrans/createTransaction', {
-            order_id: orderResult.data.order.id,
+            order_id: orderId,
             gross_amount: orderResult.data.order.totalPayment,
             customer_details: {
-              first_name: username, // or fetch from your user DB
+              first_name: username,
               email: "test@example.com",
               phone: "08123456789"
             }
@@ -229,53 +236,53 @@ export default {
           const token = midtransResponse.data.token;
           window.snap.pay(token, {
             onSuccess: async (result) => {
-              await axios.put(`https://bmp-inv-be.zenbytes.id/order/updateStatusAfterPayment/${orderResult.data.order.id}`);
-              sessionStorage.removeItem('discountCode');
-              await wishlistCRUD().deleteWishlist(username);  
-              console.log('Payment Success:', result);
-              window.location.href = '/paymentSuccess';
+              await axios.put(`https://bmp-inv-be.zenbytes.id/order/updateStatusAfterPayment/${orderId}`);
+              sessionStorage.removeItem("discountCode");
+              await deleteWishlist(username);
+              console.log("Payment Success:", result);
+              window.location.href = "/paymentSuccess";
             },
             onPending: (result) => {
-              console.log('Payment Pending:', result);
+              console.log("Payment Pending:", result);
             },
             onError: (result) => {
-              console.error('Payment Error:', result);
+              console.error("Payment Error:", result);
             }
           });
         }
       } catch (error) {
         console.error(error);
-        alert(error.response?.data?.message || 'Gagal memproses pembayaran');
+        alert(error.response?.data?.message || "Gagal memproses pembayaran");
       }
     };
 
-
-
-    return { stateAddress, 
-            getOneAddress, 
-            stateProduct,
-            getAllProductMainWarehouse,
-            stateDiscount,
-            getOneDiscount,
-            stateWishlist,
-            getOneWishlist,
-            getOngkir,
-            stateAPI,
-            discountCode,
-            qty,
-            subtotal,
-            tempdiscount,
-            discount,
-            totalPembayaran,
-            pick,
-            defaultAddress,
-            getProductPrice,
-            handleDiscountClick,
-            deleteWishlist,
-            bayar
-            };
+    return {
+      stateAddress,
+      getOneAddress,
+      stateProduct,
+      getAllProductMainWarehouse,
+      stateDiscount,
+      getOneDiscount,
+      stateWishlist,
+      getOneWishlist,
+      getOngkir,
+      stateAPI,
+      discountCode,
+      qty,
+      subtotal,
+      tempdiscount,
+      discount,
+      totalPembayaran,
+      pick,
+      defaultAddress,
+      getProductPrice,
+      handleDiscountClick,
+      deleteWishlist,
+      bayar
+    };
   }
 };
 </script>
+
 <style lang="">
 </style>
