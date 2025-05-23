@@ -18,13 +18,6 @@ app.use(cors({
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(cookieParser());
 
-//cors and middleware 
-app.use(function(req,res,next){
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
-  res.header("Access-Control-Allow-Headers", "auth-token","Origin, X-Requested-With, Content-Type, Accept");
-  next();
-})
 // Connect to MongoDB
 const uri = "mongodb+srv://bryantpirih:1234@clusterta.xcndkot.mongodb.net/?retryWrites=true&w=majority";
 mongoose.connect(uri, { 
