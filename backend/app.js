@@ -4,7 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const app = express();
-const port = process.env.PORT || 4200;
+const port = process.env.PORT || 3000;
 const path = require('path');
 const runReminderScheduler = require('./jobs/reminderScheduler');
 require('dotenv').config();
