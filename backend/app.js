@@ -19,7 +19,7 @@ app.use(bodyParser.json({ limit: '10mb' }));
 app.use(cookieParser());
 
 // Connect to MongoDB
-const uri = "mongodb+srv://bryantpirih:1234@clusterta.xcndkot.mongodb.net/?retryWrites=true&w=majority";
+const uri = process.env.MONGO_URI;
 mongoose.connect(uri, { 
   useNewUrlParser: true,
   useUnifiedTopology: true,
