@@ -71,7 +71,11 @@
           </template>
         </ul>
 
-        <button @click="logout()" class="btn btn-outline-danger" type="submit">Logout</button>
+        <div class="d-flex align-items-center gap-3">
+          <span class="text-muted small">Hi, {{ username }}</span>
+          <button @click="logout()" class="btn btn-outline-danger">Logout</button>
+        </div>
+
       </div>
     </div>
   </nav>
@@ -81,7 +85,8 @@ export default {
   name: "navBarInventory",
   data() {
     return {
-      role: Number(sessionStorage.getItem('role'))
+      role: Number(sessionStorage.getItem('role')),
+      username: sessionStorage.getItem('username') || 'User'
     }
   },
   methods: {
@@ -92,6 +97,7 @@ export default {
   }
 }
 </script>
+
 <style scoped>
     .card {
         border-radius: 12px;
