@@ -3,7 +3,6 @@
     <navBarInventory />
 
     <div class="container py-5">
-      <!-- 🔄 Loading State -->
       <div v-if="!stateMove.move?.data || !stateMoveProduct.moveProducts?.data?.products" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -35,7 +34,7 @@
           </p>
         </div>
 
-        <!-- 🛒 Products -->
+        <!-- 🍎 Products -->
         <div class="mb-4">
           <h5 class="fw-bold mb-2">Produk yang Dipindahkan:</h5>
           <ul class="list-group">
@@ -57,13 +56,17 @@
 
         <!-- 🔘 Action Buttons -->
         <div class="d-flex gap-3" v-if="stateMove.move.data.status < 4">
-          <button class="btn btn-outline-success" @click="updateMove(stateMove.move.data.id, stateMove.move.data.status, approver)">
+          <button
+            class="btn btn-outline-success"
+            v-if="canUpdate"
+            @click="updateMove(stateMove.move.data.id, stateMove.move.data.status, approver)"
+          >
             Update Status
           </button>
 
           <button
             class="btn btn-primary"
-            v-if="stateMove.move.data.status === 3"
+            v-if="stateMove.move.data.status === 3 && canFinalize"
             :disabled="finalized"
             @click="finalizeTransfer(stateMove.move.data.id)"
           >
@@ -80,9 +83,10 @@ import navBarInventory from '@/components/NavBarInventory.vue'
 import moveCRUD from '../modules/moveCRUD.js'
 import moveProductCRUD from '../modules/moveProductCRUD.js'
 import productCRUD from '../modules/productCRUD.js'
-import { onBeforeMount, watch, ref } from 'vue'
+import getWorker from '../modules/workerCRUD.js'
+import { onBeforeMount, watch, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-
+import Swal from 'sweetalert2'
 export default {
   name: 'detailMove',
   components: {
@@ -92,19 +96,20 @@ export default {
     const { stateMove, getOneMove, updateMove } = moveCRUD()
     const { stateMoveProduct, getMoveProduct, finalizeMove } = moveProductCRUD()
     const { stateProduct, getAllProductMainWarehouse } = productCRUD()
+    const { stateWorker, getOneWorker } = getWorker()
     const route = useRoute()
     const approver = sessionStorage.getItem('username')
     const finalized = ref(false)
 
     const refreshMoveData = async () => {
       await getOneMove(route.params.id)
-      await getMoveProduct(route.params.id) // ← this is the key fix
+      await getMoveProduct(route.params.id)
     }
 
-
-    onBeforeMount(() => {
-      refreshMoveData()
-      getAllProductMainWarehouse()
+    onBeforeMount(async () => {
+      await refreshMoveData()
+      await getAllProductMainWarehouse()
+      await getOneWorker(approver)
     })
 
     watch(
@@ -116,29 +121,78 @@ export default {
       }
     )
 
+    const canUpdate = computed(() => {
+      const move = stateMove.move?.data
+      const worker = stateWorker.workers?.data
+      if (!move || !worker) return false
+
+      if (move.status === 0 &&
+          worker.warehouseId === move.from &&
+          (worker.role === 1 || worker.role === 2)) {
+        return true
+      }
+
+      if (move.status === 1 &&
+          worker.username === move.approver &&
+          worker.warehouseId === move.from &&
+          (worker.role === 1 || worker.role === 2)) {
+        return true
+      }
+
+      if ((move.status === 2 || move.status === 3) &&
+          worker.username === move.requester &&
+          worker.warehouseId === move.to) {
+        return true
+      }
+
+      return false
+    })
+
+    const canFinalize = computed(() => {
+      const move = stateMove.move?.data
+      const worker = stateWorker.workers?.data
+      if (!move || !worker) return false
+      return worker.warehouseId === move.to
+    })
+
     const finalizeTransfer = async (moveId) => {
       try {
         const result = await finalizeMove(moveId)
         if (result && result.message) {
-          alert('Perpindahan stok berhasil difinalisasi!')
+          await Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: 'Perpindahan stok berhasil difinalisasi!',
+            timer: 2000,
+            showConfirmButton: false
+          })
           finalized.value = true
           await refreshMoveData()
-          getMoveProduct(moveId) // ensure latest data shown after finalizing
+          getMoveProduct(moveId)
         } else {
-          alert('Gagal finalisasi perpindahan.')
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Gagal finalisasi perpindahan.'
+          })
         }
       } catch (err) {
         console.error('Finalize error:', err)
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Terjadi kesalahan saat memproses finalisasi.'
+        })
       }
     }
 
+
     const getProductName = (productId) => {
       const products = stateProduct.product
-      if (!Array.isArray(products)) return productId // 🛡 prevent .find() error
+      if (!Array.isArray(products)) return productId
       const product = products.find(p => p.id === productId)
       return product ? product.name : productId
     }
-
 
     return {
       stateMove,
@@ -151,10 +205,13 @@ export default {
       finalizeTransfer,
       getProductName,
       approver,
-      finalized
+      finalized,
+      canUpdate,
+      canFinalize
     }
   }
 }
 </script>
 
-<style></style>
+<style>
+</style>

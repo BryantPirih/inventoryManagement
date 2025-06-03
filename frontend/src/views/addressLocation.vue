@@ -11,7 +11,6 @@
         </router-link>
       </div>
 
-      <!-- Fix here: directly use stateAddress.address instead of stateAddress.address.data -->
       <div v-if="stateAddress.address.length">
         <div
           class="card shadow-sm border-0 mb-3 p-4 rounded-4"
@@ -32,15 +31,30 @@
             </div>
           </div>
 
-          <!-- Show button if not default -->
-          <div v-if="item.isDefault !== 0" class="mt-3">
+          <div class="mt-3 d-flex gap-2 flex-wrap">
             <button
+              v-if="item.isDefault !== 0"
               class="btn btn-outline-primary btn-sm rounded-pill"
               @click="setDefaultAddress(item._id)"
             >
               Jadikan Default
             </button>
+
+            <router-link :to="`/editAddress/${item.id}`">
+              <button class="btn btn-outline-secondary btn-sm rounded-pill">
+                <i class="bi bi-pencil"></i> Edit
+              </button>
+            </router-link>
+
+            <button
+              class="btn btn-outline-danger btn-sm rounded-pill"
+              @click="deleteHandler(item.id)"
+            >
+              <i class="bi bi-trash"></i> Hapus
+            </button>
           </div>
+
+
         </div>
       </div>
 
@@ -56,6 +70,7 @@
 import navBarUser from "@/components/navBarUser.vue";
 import addressCRUD from "../modules/addressCRUD.js";
 import { onMounted } from "vue";
+import Swal from 'sweetalert2';
 
 export default {
   name: "addressLocation",
@@ -63,12 +78,39 @@ export default {
     navBarUser,
   },
   setup() {
-    const { stateAddress, getAllAddress, updateAddress } = addressCRUD();
+    const { stateAddress, getAllAddress, updateAddress, deleteAddress } = addressCRUD();
+
 
     onMounted(() => {
       stateAddress.newUsername = sessionStorage.getItem("username");
       getAllAddress(stateAddress.newUsername);
     });
+
+    const deleteHandler = async (id) => {
+      const result = await Swal.fire({
+        title: 'Hapus alamat ini?',
+        text: 'Tindakan ini tidak dapat dibatalkan!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+      });
+
+      if (result.isConfirmed) {
+        await deleteAddress(id);
+        await getAllAddress(stateAddress.newUsername);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Alamat dihapus',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    };
+
 
     const setDefaultAddress = async (selectedId) => {
       const username = stateAddress.newUsername;
@@ -84,6 +126,7 @@ export default {
       stateAddress,
       getAllAddress,
       setDefaultAddress,
+      deleteHandler
     };
   },
 };

@@ -39,17 +39,17 @@ const getProductCategories = () => {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Kategori berhasil ditambahkan!");
-        const categoryId = data.categories.id;
-        window.location.href = `/uploadImageProductCategories?id=${categoryId}`;
+        // ✅ Return new category ID to the component to handle redirect
+        return data.categories.id;
       } else {
-        alert("Gagal menambahkan kategori.");
+        throw new Error("Gagal menambahkan kategori");
       }
     } catch (error) {
       console.log(error);
-      alert("Terjadi kesalahan saat menambahkan kategori.");
+      throw error; // Let the component handle the error
     }
   };
+
 
 
   const deleteProductCategory = async (id) => {

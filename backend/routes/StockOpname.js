@@ -72,10 +72,36 @@ router.post('/new', async (req, res) => {
 // ✅ GET /stockOpname — get all logs
 router.get('/', async (req, res) => {
   try {
-    const logs = await StockOpname.find().sort({ opnameDate: -1 });
-    res.status(200).json({ data: logs });
+    const { username } = req.query;
+
+    let logs;
+
+    if (!username) {
+      logs = await StockOpname.find().sort({ opnameDate: -1 });
+    } else {
+      const user = await Worker.findOne({ username });
+      if (!user) return res.status(403).json({ error: 'User not found' });
+
+      if (user.role === 1) {
+        logs = await StockOpname.find().sort({ opnameDate: -1 });
+      } else {
+        logs = await StockOpname.find({ warehouseId: user.warehouseId }).sort({ opnameDate: -1 });
+      }
+    }
+
+    const enrichedLogs = await Promise.all(
+      logs.map(async (log) => {
+        const product = await Product.findOne({ id: log.productId });
+        return {
+          ...log._doc,
+          productName: product?.name || "(Produk tidak ditemukan)"
+        };
+      })
+    );
+
+    res.status(200).json({ data: enrichedLogs });
   } catch (err) {
-    console.error('❌ Error fetching all stock opname logs:', err);
+    console.error('❌ Error fetching stock opname logs:', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

@@ -3,7 +3,7 @@
     <navBarUser />
     <div class="container my-4">
       <h2 class="mb-4">Checkout Keranjang</h2>
-      <!-- Alamat Pengiriman -->
+
       <div class="card p-3 mb-4">
         <h5 class="card-title">Alamat Pengiriman</h5>
         <div v-if="defaultAddress">
@@ -19,7 +19,6 @@
         <div v-else class="text-muted">Belum ada alamat pengiriman.</div>
       </div>
 
-      <!-- Ringkasan Produk -->
       <div class="card p-4 mb-4 shadow-sm">
         <h5 class="card-title">Ringkasan Produk</h5>
         <div v-if="stateCart.cart.data && stateProduct.product">
@@ -32,7 +31,6 @@
         <div v-else class="text-muted">Tidak ada produk dalam keranjang.</div>
       </div>
 
-      <!-- Metode Pembayaran -->
       <div class="card p-3 mb-4">
         <h5 class="card-title">Metode Pembayaran</h5>
         <div class="form-check">
@@ -45,7 +43,6 @@
         </div>
       </div>
 
-      <!-- Diskon -->
       <div class="card p-3 mb-4">
         <h5 class="card-title">Voucher</h5>
         <router-link
@@ -60,7 +57,6 @@
         </router-link>
       </div>
 
-      <!-- Ringkasan Pembayaran -->
       <div class="card p-3 mb-4">
         <h5 class="card-title">Ringkasan Pembayaran</h5>
         <p>Subtotal: <strong>Rp {{ parseInt(subtotal).toLocaleString('id') }}</strong></p>
@@ -73,7 +69,6 @@
         <p>Total: <strong class="text-success">Rp {{ parseInt(totalPembayaran).toLocaleString('id') }}</strong></p>
       </div>
 
-      <!-- Tombol Bayar -->
       <button @click="bayar" class="btn btn-success btn-lg w-100">Bayar Sekarang</button>
     </div>
   </div>
@@ -128,6 +123,7 @@ export default {
     document.head.appendChild(script);
 
     onBeforeMount(() => {
+        pick.value = 0;
         qty.value = sessionStorage.getItem("qty")
         stateAddress.newUsername = sessionStorage.getItem("username");
         getOneAddress(stateAddress.newUsername);

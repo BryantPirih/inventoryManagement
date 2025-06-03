@@ -43,26 +43,60 @@
 import navBarInventory from '@/components/NavBarInventory.vue'
 import productCategoriesCRUD from '../modules/productCategoriesCRUD.js'
 import { onMounted } from 'vue'
+import Swal from 'sweetalert2'
 
 export default {
-    name:"productCategoriesWorkerView",
-    components:{
-        navBarInventory
-    },
-    setup(){
-        const { statePC, getAllProductCategories, deleteProductCategory } = productCategoriesCRUD()
-        const handleDelete = (id) => {
-          if (confirm('Delete this category?')) {
-            deleteProductCategory(id)
-          }
+  name: "productCategoriesWorkerView",
+  components: {
+    navBarInventory
+  },
+  setup() {
+    const { statePC, getAllProductCategories, deleteProductCategory } = productCategoriesCRUD()
+
+    const handleDelete = async (id) => {
+      const result = await Swal.fire({
+        title: 'Yakin ingin menghapus?',
+        text: 'Kategori ini akan dihapus permanen.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+      })
+
+      if (result.isConfirmed) {
+        try {
+          await deleteProductCategory(id)
+          Swal.fire({
+            icon: 'success',
+            title: 'Terhapus',
+            text: 'Kategori berhasil dihapus.'
+          })
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Terjadi kesalahan saat menghapus kategori.'
+          })
         }
-        onMounted(()=>{
-            getAllProductCategories()
-        })
-        return { statePC, getAllProductCategories, deleteProductCategory,handleDelete }
+      }
     }
+
+    onMounted(() => {
+      getAllProductCategories()
+    })
+
+    return {
+      statePC,
+      getAllProductCategories,
+      deleteProductCategory,
+      handleDelete
+    }
+  }
 }
 </script>
+
 <style lang="">
     
 </style>

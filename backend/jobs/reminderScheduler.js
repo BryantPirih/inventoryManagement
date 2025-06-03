@@ -8,11 +8,12 @@ const Notification = require('../models/notification');
 const sendEmail = require('../utils/sendEmail');
 const runMonthlyInventoryReminder = require('./inventoryCheckScheduler');
 const runLowStockReminder = require('./lowStockReminderScheduler');
+const runMidtransCleanup = require('./midtransCleanupScheduler');
 
 const runReminderScheduler = () => {
-  // 🔁 General reminder scheduler
+  
   cron.schedule('* * * * *', async () => {
-    console.log('🔔 Running reminder check...');
+    console.log('Running reminder check...');
     try {
       const now = new Date();
       const reminders = await Reminder.find({ isSent: false, remindAt: { $lte: now } });
@@ -32,11 +33,11 @@ const runReminderScheduler = () => {
         console.log(`✅ Reminder "${reminder.title}" sent and marked as sent`);
       }
     } catch (error) {
-      console.error('📛 Reminder scheduler error:', error);
+      console.error('Reminder scheduler error:', error);
     }
   });
   
-  // 🛒 Wishlist restock checker (runs every hour)
+  
 cron.schedule('* * * * *', async () => {
   console.log('🔍 Checking wishlist restocks...');
 
@@ -51,13 +52,13 @@ cron.schedule('* * * * *', async () => {
           const product = await Product.findOne({ id: item.productID });
 
           if (product && product.stock > 0) {
-            // ✅ Mark item as restocked and notify
+            
             item.status = 'in-stock';
             item.notified = true;
             updated = true;
 
-            console.log(`📢 Notify ${wishlist.username}: "${item.productName}" now in stock`);
-            // TODO: Replace this console.log with in-app notification or email if needed
+            console.log(`Notify ${wishlist.username}: "${item.productName}" now in stock`);
+            
             await Notification.create({
               username: wishlist.username,
               type: 'wishlist',
@@ -70,23 +71,23 @@ cron.schedule('* * * * *', async () => {
       }
       if (updated) {
         await wishlist.save();
-        console.log(`✅ Wishlist for ${wishlist.username} updated`);
+        console.log(`Wishlist for ${wishlist.username} updated`);
       }
     }
   } catch (err) {
-    console.error('📛 Wishlist restock check error:', err);
+    console.error('Wishlist restock check error:', err);
   }
 });
 
-// 🚚 Order status notifier (every 2 minutes for demo)
-cron.schedule('*/2 * * * *', async () => {
-  console.log('📦 Checking orders for status notifications...');
+
+cron.schedule('* * * * *', async () => {
+  console.log('Checking orders for status notifications...');
 
   try {
     const orders = await Order.find();
 
     for (const order of orders) {
-      // Skip if already notified for this status
+      
       if (order.notifiedStatuses?.includes(order.status)) continue;
 
       let notificationData = null;
@@ -98,6 +99,18 @@ cron.schedule('*/2 * * * *', async () => {
             title: 'Pembayaran Diterima',
             message: `Pembayaran untuk pesanan ${order.id} telah diterima.`
           };
+
+          const allWorkers = await Worker.find({ role: { $in: [1, 2, 3] } });
+
+          for (const worker of allWorkers) {
+            await sendEmail({
+              to: worker.email,
+              subject: `Pesanan Menunggu Konfirmasi - ${order.id}`,
+              text: `Halo ${worker.username || "Pengguna"},\n\n` +
+              `Ada pesanan baru dengan ID ${order.id} yang menunggu konfirmasi.\n` +
+              `Silakan buka sistem untuk memproses pesanan ini.`
+            });
+          }
           break;
         case 2:
           notificationData = {
@@ -141,11 +154,11 @@ cron.schedule('*/2 * * * *', async () => {
         order.notifiedStatuses.push(order.status);
         await order.save();
 
-        console.log(`🔔 Notification sent for order ${order.id}, status ${order.status}`);
+        console.log(`Notification sent for order ${order.id}, status ${order.status}`);
       }
     }
   } catch (err) {
-    console.error('📛 Order status notification error:', err);
+    console.error('Order status notification error:', err);
   }
 });
 
@@ -172,12 +185,9 @@ cron.schedule('0 2 * * *', async () => {
   }
 });
 
-
-
-
-  // 📅 Start monthly and low stock reminder jobs
   runMonthlyInventoryReminder();
   runLowStockReminder();
+  runMidtransCleanup();
 };
 
 module.exports = runReminderScheduler;

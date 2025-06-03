@@ -18,19 +18,28 @@ router.get('/', async (req, res)=>{
   res.status(201).json(products)
 });
 
-// GET /product/byWarehouse/:warehouseId
+
 router.get('/byWarehouse/:warehouseId', async (req, res) => {
   try {
     const { warehouseId } = req.params;
-
     const products = await Product.find({ warehouseId });
-    res.status(200).json(products);
+
+    const enriched = await Promise.all(
+      products.map(async (product) => {
+        const category = await ProductCategories.findOne({ id: product.categoryId });
+        return {
+          ...product._doc,
+          categoryName: category ? category.categoriesName : "(Kategori tidak ditemukan)"
+        };
+      })
+    );
+
+    res.status(200).json(enriched);
   } catch (error) {
     console.error("Error fetching products by warehouse:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 router.get('/getAllProductMainWarehouse', async (req, res)=>{
     const mainWarehouse = await Warehouse.find({main : 0 })

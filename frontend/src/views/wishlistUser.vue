@@ -87,6 +87,7 @@ import wishlistCRUD from "../modules/wishlistCRUD.js";
 import productCRUD from "../modules/productCRUD.js";
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
+import Swal from 'sweetalert2';
 
 export default {
   name: "wishlistUser",
@@ -101,12 +102,29 @@ export default {
     };
 
     const deleteItemFromWishlist = async (productID) => {
-      const confirmed = confirm("Hapus item ini dari wishlist?");
-      if (!confirmed) return;
+      const result = await Swal.fire({
+        title: 'Yakin ingin menghapus?',
+        text: 'Item ini akan dihapus dari wishlist Anda.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+      });
 
-      const username = stateWishlist.newUsername || sessionStorage.getItem("username");
-      await deleteWishlistItem(username, productID);
+      if (result.isConfirmed) {
+        const username = stateWishlist.newUsername || sessionStorage.getItem("username");
+        await deleteWishlistItem(username, productID);
+        Swal.fire({
+          icon: 'success',
+          title: 'Terhapus!',
+          text: 'Item berhasil dihapus dari wishlist.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
     };
+
 
     const getImage = (id) => {
       const p = stateProduct.product.find((p) => p.id === id);

@@ -10,7 +10,8 @@ const moveCRUD = () => {
   // ✅ Get all move headers
   const getAllMove = async () => {
     try {
-      const res = await fetch("https://bmp-inv-be.zenbytes.id/move/");
+      const username = sessionStorage.getItem("username");
+      const res = await fetch(`https://bmp-inv-be.zenbytes.id/move?username=${username}`);
       const data = await res.json();
       stateMove.move = data;
     } catch (error) {

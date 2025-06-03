@@ -25,22 +25,22 @@
     </div>
   </div>
 </template>
-
 <script>
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import navBarInventory from '@/components/NavBarInventory.vue';
+import Swal from 'sweetalert2'; 
 
 export default {
   name: 'uploadImageProductCategories',
   components: { navBarInventory },
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const categoryId = route.query.id;
 
     const imageFile = ref(null);
     const preview = ref(null);
-    const success = ref(false);
 
     const onFileChange = (e) => {
       const file = e.target.files[0];
@@ -62,13 +62,27 @@ export default {
         });
 
         if (res.ok) {
-          success.value = true;
+          await Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'Gambar kategori berhasil diunggah.',
+            confirmButtonText: 'OK'
+          });
+          router.push('/productCategoriesWorker');
         } else {
-          alert("Gagal upload gambar kategori.");
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Gagal upload gambar kategori.'
+          });
         }
       } catch (err) {
         console.error("Upload error:", err);
-        alert("Terjadi kesalahan saat upload.");
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Terjadi kesalahan saat upload.'
+        });
       }
     };
 
@@ -76,8 +90,7 @@ export default {
       onFileChange,
       uploadImage,
       imageFile,
-      preview,
-      success
+      preview
     };
   }
 };

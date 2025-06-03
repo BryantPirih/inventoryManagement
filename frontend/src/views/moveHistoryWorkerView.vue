@@ -3,7 +3,7 @@
     <navBarInventory />
     <div class="container my-5">
       <h3 class="fw-bold mb-4">Laporan Perpindahan Barang</h3>
-
+      {{ stateMoveProduct }}
       <!-- Filter by date -->
       <div class="row mb-3">
         <div class="col-md-4">
@@ -58,7 +58,7 @@
           <tr v-for="row in filteredFlattenedRows" :key="row._id">
             <td>{{ row.from }}</td>
             <td>{{ row.to }}</td>
-            <td>{{ row.productId }}</td>
+            <td>{{ row.productName || row.productId }}</td>
             <td>{{ row.quantity }}</td>
             <td>Rp.{{ parseInt(row.unitPrice).toLocaleString('id') }}</td>
             <td>Rp.{{ parseInt(row.total).toLocaleString('id') }}</td>
@@ -127,6 +127,7 @@ export default {
 
       for (const move of filteredMoves) {
         await getMoveProduct(move.id);
+
         const products = stateMoveProduct.moveProducts.data?.products || [];
 
         const rows = products.map((p, index) => ({
@@ -134,6 +135,7 @@ export default {
           from: move.from,
           to: move.to,
           productId: p.productId,
+          productName: p.productName || p.productId, 
           quantity: p.quantity,
           unitPrice: p.unitPrice,
           total: p.total,
@@ -149,7 +151,7 @@ export default {
         return (
           (!filters.value.from || row.from.includes(filters.value.from)) &&
           (!filters.value.to || row.to.includes(filters.value.to)) &&
-          (!filters.value.productId || row.productId.includes(filters.value.productId)) &&
+          (!filters.value.productId || row.productName.toLowerCase().includes(filters.value.productId.toLowerCase())) &&
           (!filters.value.quantity || row.quantity.toString().includes(filters.value.quantity)) &&
           (!filters.value.unitPrice || row.unitPrice.toString().includes(filters.value.unitPrice)) &&
           (!filters.value.total || row.total.toString().includes(filters.value.total))

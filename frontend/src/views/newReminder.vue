@@ -50,6 +50,7 @@
 import navBarInventory from '@/components/NavBarInventory.vue'
 import reminderCRUD from '../modules/reminderCRUD'
 import { useRouter } from 'vue-router'
+import Swal from 'sweetalert2'
 
 export default {
   name: "newReminderView",
@@ -61,9 +62,18 @@ export default {
     const handleSubmit = async () => {
       const success = await newReminder()
       if (success) {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Sukses',
+          text: 'Pengingat berhasil dibuat!'
+        })
         router.push('/reminder')
       } else {
-        alert('Failed to create reminder')
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: 'Gagal membuat pengingat. Coba lagi.'
+        })
       }
     }
 

@@ -25,22 +25,22 @@
     </div>
   </div>
 </template>
-
 <script>
 import navBarInventory from "@/components/NavBarInventory.vue";
 import { ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import Swal from "sweetalert2"; 
 
 export default {
   name: "uploadImageProductAdmin",
   components: { navBarInventory },
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const productId = route.query.id;
 
     const imageFile = ref(null);
     const preview = ref(null);
-    const success = ref(false);
 
     const onFileChange = (e) => {
       const file = e.target.files[0];
@@ -62,17 +62,31 @@ export default {
         });
 
         if (res.ok) {
-          success.value = true;
+          await Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'Gambar berhasil diunggah.',
+            confirmButtonText: 'OK'
+          });
+          router.push('/productsWorker');
         } else {
-          alert("Gagal upload gambar.");
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Gagal upload gambar.'
+          });
         }
       } catch (err) {
         console.error("Upload error:", err);
-        alert("Terjadi kesalahan saat upload.");
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Terjadi kesalahan saat upload.'
+        });
       }
     };
 
-    return { onFileChange, uploadImage, imageFile, preview, success };
+    return { onFileChange, uploadImage, imageFile, preview };
   }
 };
 </script>

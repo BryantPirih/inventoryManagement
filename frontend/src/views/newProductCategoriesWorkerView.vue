@@ -5,7 +5,7 @@
     <div class="container mt-4">
       <h3 class="fw-bold mb-4">Create Product Category</h3>
 
-      <form @submit.prevent="newPC">
+      <form @submit.prevent="validateAndSubmit">
         <div class="mb-3">
           <label class="form-label">Category Name</label>
           <input type="text" class="form-control" required v-model="statePC.newCn" />
@@ -56,10 +56,11 @@
     </div>
   </div>
 </template>
-
 <script>
 import navBarInventory from '@/components/NavBarInventory.vue'
 import productCategoriesCRUD from '../modules/productCategoriesCRUD.js'
+import Swal from 'sweetalert2'
+import { useRouter } from 'vue-router'
 
 export default {
   name: "newProductCategories",
@@ -67,9 +68,50 @@ export default {
     navBarInventory,
   },
   setup() {
-    const { statePC, newPC } = productCategoriesCRUD();
+    const { statePC, newPC } = productCategoriesCRUD()
+    const router = useRouter()
 
-    return { statePC, newPC };
+    const validateAndSubmit = async () => {
+      if (!statePC.newCn || !statePC.newUnit || statePC.boolTF === null) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Gagal',
+          text: 'Nama kategori, unit, dan pilihan konversi wajib diisi!'
+        });
+        return;
+      }
+
+      if (statePC.boolTF == 1 && (!statePC.newUC || !statePC.newConversionRate)) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Gagal',
+          text: 'Isi unit konversi dan nilai konversinya!'
+        });
+        return;
+      }
+
+      try {
+        const categoryId = await newPC();
+        await Swal.fire({
+          icon: 'success',
+          title: 'Sukses',
+          text: 'Kategori berhasil ditambahkan!'
+        });
+        router.push(`/uploadImageProductCategories?id=${categoryId}`);
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Terjadi kesalahan saat menambahkan kategori.'
+        });
+      }
+    }
+
+    return {
+      statePC,
+      validateAndSubmit
+    }
   }
 }
 </script>
+

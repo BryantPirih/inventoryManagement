@@ -5,7 +5,7 @@
     <div class="container mt-4">
       <h3 class="fw-bold mb-4">Create New Discount</h3>
 
-      <form @submit.prevent="newDiscount">
+      <form @submit.prevent="validateAndSubmit">
         <div class="mb-3">
           <label class="form-label">Discount Name</label>
           <input type="text" class="form-control" required v-model="stateDiscount.newNameDiscount" />
@@ -69,13 +69,13 @@
     </div>
   </div>
 </template>
-
-
 <script>
 import navBarInventory from '@/components/NavBarInventory.vue'
 import discountCRUD from '../modules/discountCRUD'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import Swal from 'sweetalert2'
+import { useRouter } from 'vue-router'
 
 export default {
   name: "newDiscount",
@@ -85,7 +85,52 @@ export default {
   },
   setup() {
     const { stateDiscount, newDiscount } = discountCRUD()
-    return { stateDiscount, newDiscount }
+    const router = useRouter()
+
+    const validateAndSubmit = async () => {
+      const s = stateDiscount
+      if (
+        !s.newNameDiscount || !s.newDiscountCode || !s.newPaymentMethod ||
+        !s.newDiscountType || !s.newDiscountStart || !s.newDiscountEnd ||
+        !s.newMinimumTransaction || !s.newUsageLimit ||
+        (s.newDiscountType === '1' && !s.newFixedAmountDiscount) ||
+        (s.newDiscountType === '2' && !s.newPercentageDiscount) ||
+        (s.newDiscountType === '3' && (!s.newFixedAmountDiscount || !s.newPercentageDiscount))
+      ) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Gagal',
+          text: 'Semua field wajib diisi sesuai jenis diskon yang dipilih.'
+        })
+        return
+      }
+
+      try {
+        const success = await newDiscount()
+        if (success) {
+          await Swal.fire({
+            icon: 'success',
+            title: 'Sukses',
+            text: 'Diskon berhasil dibuat!'
+          })
+          router.push('/discountOverview')
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Gagal membuat diskon.'
+          })
+        }
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Terjadi kesalahan saat menyimpan diskon.'
+        })
+      }
+    }
+
+    return { stateDiscount, validateAndSubmit }
   }
 }
 </script>

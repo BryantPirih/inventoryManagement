@@ -62,6 +62,8 @@ import { onBeforeMount } from 'vue'
 import productCRUD from '../modules/productCRUD.js'
 import moveCRUD from '../modules/moveCRUD.js'
 import moveProductCRUD from '../modules/moveProductCRUD.js'
+import Swal from 'sweetalert2'
+import { useRouter } from 'vue-router'
 
 export default {
   name: "newProduct",
@@ -72,8 +74,8 @@ export default {
     const { stateProduct, getAllProductMainWarehouse } = productCRUD()
     const { stateMove, createMove } = moveCRUD()
     const { createMoveProduct } = moveProductCRUD()
+    const router = useRouter()
 
-    // ✅ Initialize form state
     onBeforeMount(() => {
       stateMove.newRequester = sessionStorage.getItem('username')
       stateMove.products = [
@@ -82,24 +84,38 @@ export default {
       getAllProductMainWarehouse()
     })
 
-    // ✅ Add new product input row
     const addProduct = () => {
       stateMove.products.push({ productId: '', quantity: 0, unitPrice: 0, description: '' })
     }
 
-    // ✅ Remove a product row
     const removeProduct = (index) => {
       stateMove.products.splice(index, 1)
     }
 
-    // ✅ Handle form submission
     const newMove = async () => {
-      const moveHeader = await createMove()
-      if (!moveHeader || !moveHeader.id) {
-        alert("Failed to create move.")
-        return
+      // Validation
+      for (let i = 0; i < stateMove.products.length; i++) {
+        const p = stateMove.products[i]
+        if (!p.productId || p.quantity <= 0 || p.unitPrice <= 0) {
+          return Swal.fire({
+            icon: 'warning',
+            title: 'Validasi Gagal',
+            text: `Produk #${i + 1} tidak valid. Pastikan produk dipilih dan quantity & harga lebih dari 0.`
+          })
+        }
       }
 
+      // Create move header
+      const moveHeader = await createMove()
+      if (!moveHeader || !moveHeader.id) {
+        return Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: 'Gagal membuat permintaan perpindahan barang.'
+        })
+      }
+
+      // Prepare move products
       const products = stateMove.products.map(p => ({
         productId: p.productId,
         quantity: Number(p.quantity),
@@ -108,16 +124,23 @@ export default {
         description: p.description
       }))
 
+      // Create move products
       const result = await createMoveProduct(moveHeader.id, products)
 
       if (result && result.message) {
-        alert("Move request submitted successfully!")
-        // Optional: reset form
-        stateMove.products = [
-          { productId: '', quantity: 0, unitPrice: 0, description: '' }
-        ]
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil',
+          text: 'Permintaan perpindahan berhasil dikirim.'
+        }).then(() => {
+          router.push('/move')
+        })
       } else {
-        alert("Failed to submit move products.")
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: 'Gagal menyimpan data produk perpindahan.'
+        })
       }
     }
 

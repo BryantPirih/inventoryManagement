@@ -39,11 +39,24 @@ const getWarehouse =() =>{
         request
         )
     }
+    const deleteWarehouse = async (id) => {
+        try {
+            const res = await fetch(`https://bmp-inv-be.zenbytes.id/warehouse/${id}`, {
+            method: 'DELETE',
+            });
+            const data = await res.json();
+            return data;
+        } catch (err) {
+            console.error("Error deleting warehouse:", err);
+        }
+    };
+
 
     return {
         state,
         getAllWarehouse,
-        newWarehouse
+        newWarehouse,
+        deleteWarehouse
     }
 }
 

@@ -7,15 +7,17 @@ const stockOpnameCRUD = () => {
   });
 
   // ✅ Get all stock opname logs
-  const getAllOpnameLogs = async () => {
-    try {
-      const res = await fetch("https://bmp-inv-be.zenbytes.id/stockOpname");
-      const data = await res.json();
-      stateStockOpname.logs = data.data;
-    } catch (error) {
-      console.error("Error fetching all stock opname logs:", error);
-    }
-  };
+const getAllOpnameLogs = async () => {
+  try {
+    const username = sessionStorage.getItem("username");
+    const res = await fetch(`https://bmp-inv-be.zenbytes.id/stockOpname?username=${username}`);
+    const data = await res.json();
+    stateStockOpname.logs = data.data;
+  } catch (error) {
+    console.error("Error fetching all stock opname logs:", error);
+  }
+};
+
 
   // ✅ Get logs by warehouse
   const getOpnameLogsByWarehouse = async (warehouseId) => {

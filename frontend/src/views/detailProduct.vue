@@ -4,7 +4,7 @@
 
     <div class="container my-4">
       <div class="row">
-        <!-- Product Image -->
+
         <div class="col-md-6 d-flex justify-content-center align-items-center">
           <img
             :src="'https://bmp-inv-be.zenbytes.id' + (stateProduct.product?.data?.imageUrl || '/uploads/products/default.png')"
@@ -15,14 +15,12 @@
 
         </div>
 
-        <!-- Product Info -->
         <div class="col-md-6" v-if="stateProduct.product?.data">
           <h2 class="fw-bold">{{ stateProduct.product.data.name }}</h2>
           <hr>
           <h4 class="mb-3">Rp {{ parseInt(stateProduct.product.data.price).toLocaleString('id') }}</h4>
           <p class="text-muted">{{ stateProduct.product.data.description }}</p>
 
-          <!-- Quantity Control -->
           <div class="d-flex align-items-center mb-3">
             <button class="btn btn-outline-secondary" @click="kurangi">-</button>
             <input
@@ -37,7 +35,6 @@
             </small>
           </div>
 
-          <!-- Action Buttons -->
           <div class="d-flex flex-wrap gap-2 mt-3">
             <button @click="addCartHandler" class="btn btn-outline-success">
               Keranjang 
@@ -62,6 +59,8 @@ import cartCRUD from "../modules/cartCRUD.js";
 import wishlistCRUD from "../modules/wishlistCRUD.js";
 import { onBeforeMount } from "vue";
 import { useRoute } from "vue-router";
+import Swal from 'sweetalert2';
+
 
 export default {
   name: "detailProduct",
@@ -95,25 +94,36 @@ export default {
     };
 
     const addCartHandler = async () => {
-      // set the reactive stateCart fields
+
       stateCart.newUsername    = sessionStorage.getItem("username");
       stateCart.newProductID   = stateProduct.product.data.id;
       stateCart.newProductName = stateProduct.product.data.name;
       stateCart.newQty         = stateProduct.jumlahKeranjang;
 
-      await newCart();  // uses stateCart internally
-      alert(`Added ${stateProduct.jumlahKeranjang} × ${stateProduct.product.data.name} to cart`);
+      await newCart();  
+      Swal.fire({
+        icon: 'success',
+        title: 'Ditambahkan ke Keranjang',
+        text: `${stateProduct.jumlahKeranjang} × ${stateProduct.product.data.name} berhasil ditambahkan.`,
+        timer: 2000,
+        showConfirmButton: false
+      });
     };
 
     const addWishlistHandler = async () => {
-      // set the reactive stateWishlist fields
       stateWishlist.newUsername    = sessionStorage.getItem("username");
       stateWishlist.newProductID   = stateProduct.product.data.id;
       stateWishlist.newProductName = stateProduct.product.data.name;
-      stateWishlist.newQuantity    = stateProduct.jumlahKeranjang; // if your crud uses it
+      stateWishlist.newQuantity    = stateProduct.jumlahKeranjang; 
 
-      await newWishlist();  // uses stateWishlist internally
-      alert(`Added ${stateProduct.jumlahKeranjang} × ${stateProduct.product.data.name} to wishlist`);
+      await newWishlist(); 
+      Swal.fire({
+        icon: 'success',
+        title: 'Ditambahkan ke Wishlist',
+        text: `${stateProduct.jumlahKeranjang} × ${stateProduct.product.data.name} berhasil ditambahkan.`,
+        timer: 2000,
+        showConfirmButton: false
+      });
     };
 
     return {

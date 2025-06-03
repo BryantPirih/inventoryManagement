@@ -31,7 +31,7 @@ router.post('/new', async (req, res) => {
   try {
     const { username, name, email, role, mobilePhone, warehouseId, password } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password, 10); // secure hashing
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const newWorker = new Worker({
       username,

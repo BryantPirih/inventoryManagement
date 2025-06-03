@@ -8,8 +8,8 @@ const orderSchemas = new mongoose.Schema({
       productId: String,
       productName: String,
       quantity: Number,
-      price: Number,  // ✅ snapshot of price at time of order
-      total: Number   // ✅ quantity * price
+      price: Number,  
+      total: Number  
     }
   ],
   paymentMethod: Number,
@@ -18,14 +18,11 @@ const orderSchemas = new mongoose.Schema({
   status: Number,
   discountCode: String,
   totalPayment: Number,
-  deliveryId: String,         // ✅ link to delivery table
+  deliveryId: String,        
   notifiedStatuses: [Number],
   receivedBy: String,
   deliveredDate: Date,
   warehouseId: String
 });
-
-module.exports = mongoose.model('Order', orderSchemas);
-
 
 module.exports = mongoose.model('order', orderSchemas);

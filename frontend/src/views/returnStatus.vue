@@ -20,7 +20,7 @@
               <!-- Info -->
               <div>
                 <p class="mb-1"><strong>Order ID:</strong> {{ item.orderId }}</p>
-                <p class="mb-1"><strong>Product ID:</strong> {{ item.productId }}</p>
+                <p class="mb-1"><strong>Produk:</strong> {{ item.productName }}</p>
                 <p class="mb-1"><strong>Alasan Pengembalian:</strong> {{ item.reason }}</p>
                 <p class="mb-1"><strong>Tanggal Pengajuan:</strong> {{ formatDate(item.requestDate) }}</p>
                 <p class="mb-1">

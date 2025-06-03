@@ -3,7 +3,7 @@
       <navBarUser />
       <div class="container my-4">
         <h2 class="mb-4">Checkout</h2>
-        <!-- Address Section -->
+
         <div class="card p-3 mb-4">
         <h5 class="card-title">Alamat Pengiriman</h5>
         <div v-if="defaultAddress">
@@ -19,7 +19,6 @@
         <div v-else class="text-muted">Belum ada alamat pengiriman.</div>
       </div>
 
-        <!-- Product Section -->
         <div class="card p-4 mb-4 shadow-sm" v-if="stateProduct.product.data">
           <h5 class="card-title">Ringkasan Produk</h5>
           <div>
@@ -29,9 +28,6 @@
           </div>
         </div>
 
-
-
-        <!-- Payment Method -->
         <div class="card p-3 mb-4">
           <h5 class="card-title">Metode Pembayaran</h5>
           <div class="form-check">
@@ -58,10 +54,9 @@
           </div>
         </div>
   
-        <!-- Voucher -->
         <div class="card p-3 mb-4">
           <h5 class="card-title">Voucher</h5>
-          <router-link :to="'/discountPage'" class="nav-link p-0">
+          <router-link :to="'/discountPage'" class="nav-link p-0" @click="handleDiscountClick">
             <button class="btn btn-outline-success">
               <i class="bi bi-percent"></i>
               {{ discountCode || "Klik untuk pakai diskon" }}
@@ -69,7 +64,6 @@
           </router-link>
         </div>
   
-        <!-- Summary -->
         <div class="card p-3 mb-4">
           <h5 class="card-title">Ringkasan Pembayaran</h5>
           <p>Subtotal Product: <strong>Rp {{ parseInt(subtotal).toLocaleString('id') }}</strong></p>
@@ -123,7 +117,12 @@ export default {
     script.setAttribute("data-client-key", "SB-Mid-client-ec6hh_RUrH6HLFTM");
     document.head.appendChild(script);
 
+    const handleDiscountClick = () => {
+      sessionStorage.setItem("checkoutOrigin", "/checkoutUser");
+    };
+
     onBeforeMount(() => {
+        pick.value = 0; 
         qty.value = sessionStorage.getItem("qty")
         stateAddress.newUsername = sessionStorage.getItem("username");
         getOneAddress(stateAddress.newUsername);
@@ -169,7 +168,6 @@ export default {
                 }
               }
             } else {
-              // ✅ If no discount selected or discount data is missing
               discount.value = 0;
             }
 
@@ -280,7 +278,8 @@ export default {
             totalPembayaran,
             defaultAddress,
             pick,
-            bayar
+            bayar,
+            handleDiscountClick
             };
   }
 };

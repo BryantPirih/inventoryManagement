@@ -22,11 +22,39 @@ router.post('/createTransaction', async (req, res) => {
   
     try {
       const transaction = await snap.createTransaction(parameter);
-      res.status(200).json({ token: transaction.token });
+      res.status(200).json({ 
+        token: transaction.token,
+        redirect_url: transaction.redirect_url
+      });
     } catch (error) {
       console.error('Midtrans error:', error);
       res.status(500).json({ error: 'Transaction creation failed' });
     }
+
+});
+
+router.get('/charge/:orderId', async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const order = await Order.findOne({ id: orderId });
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    const parameter = {
+      transaction_details: {
+        order_id: orderId,
+        gross_amount: order.totalPayment,
+      },
+      credit_card: {
+        secure: true
+      }
+    };
+
+    const transaction = await snap.createTransaction(parameter);
+    return res.json({ token: transaction.token });
+  } catch (err) {
+    console.error("Midtrans charge error:", err);
+    res.status(500).json({ message: "Failed to generate Snap token" });
+  }
 });
 
 router.post('/notification', async (req, res) => {

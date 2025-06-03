@@ -17,7 +17,7 @@
 
             <div>
               <p><strong>Order ID:</strong> {{ request.orderId }}</p>
-              <p><strong>Product ID:</strong> {{ request.productId }}</p>
+              <p><strong>Product Name:</strong> {{ request.productName }}</p>
               <p><strong>Username:</strong> {{ request.username }}</p>
               <p><strong>Alasan dari User:</strong> {{ request.reason }}</p>
               <p><strong>Tanggal Permintaan:</strong> {{ formatDate(request.requestDate) }}</p>

@@ -4,6 +4,20 @@
 
     <div class="container mt-4">
       <h2 class="mb-4">Riwayat Penjualan (Selesai)</h2>
+      <div class="mb-3">
+        <div class="row g-2">
+          <div class="col-6 col-md-6">
+            <button class="btn btn-outline-success w-100" @click="selectedStatus = 4">
+              Sampai di tujuan
+            </button>
+          </div>
+          <div class="col-6 col-md-6">
+            <button class="btn btn-outline-dark w-100" @click="selectedStatus = 5">
+              Selesai
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div v-if="stateOrder.order && stateOrder.order.length > 0">
         <div class="table-responsive">
@@ -19,14 +33,14 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in stateOrder.order" :key="item.id">
+              <tr v-for="item in filteredHistory" :key="item.id">
                 <td>{{ item.id }}</td>
                 <td>{{ item.username }}</td>
                 <td>{{ new Date(item.orderDate).toLocaleDateString('id-ID') }}</td>
                 <td>Rp.{{ parseInt(item.totalPayment).toLocaleString('id') }}</td>
                 <td>
                   <span class="badge bg-success">
-                    {{ item.status === 4 ? "Selesai" : "Diterima" }}
+                    {{ item.status === 4 ? "Sampai di tujuan" : "Selesai" }}
                   </span>
                 </td>
                 <td>
@@ -51,8 +65,7 @@
 <script>
 import navBarInventory from "@/components/NavBarInventory.vue";
 import orderCRUD from "../modules/orderCRUD.js";
-import { onMounted } from "vue";
-
+import { ref, computed, onMounted } from "vue";
 export default {
   name: "historySales",
   components: {
@@ -60,12 +73,21 @@ export default {
   },
   setup() {
     const { stateOrder, getHistoryOrders } = orderCRUD();
+    const selectedStatus = ref(4);
+
+    const filteredHistory = computed(() => {
+      return stateOrder.order?.filter(order => order.status === selectedStatus.value) || [];
+    });
 
     onMounted(() => {
       getHistoryOrders();
     });
 
-    return { stateOrder };
+    return {
+      stateOrder,
+      selectedStatus,
+      filteredHistory
+    };
   },
 };
 </script>

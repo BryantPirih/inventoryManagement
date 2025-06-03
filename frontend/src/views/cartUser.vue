@@ -98,6 +98,7 @@ import { onMounted, reactive } from 'vue'
 import navBarUser from '@/components/navBarUser.vue'
 import cartCRUD from '../modules/cartCRUD.js'
 import productCRUD from '../modules/productCRUD.js'
+import Swal from 'sweetalert2';
 
 const { stateCart, getOneCart, deleteCartItem, updateItemQty } = cartCRUD()
 const { stateProduct, getAllProductMainWarehouse } = productCRUD()
@@ -109,21 +110,31 @@ const updateQty = async (index, newQty) => {
 
   const item = stateCart.cart.data.item[index]
 
-  // Update quantity in backend
   await updateItemQty(stateCart.cart.data._id, item._id, newQty)
 
-  // Optimistic update (optional)
   item.qty = newQty
 }
 
 const deleteItemFromCart = async (productID) => {
-  if (!productID || !stateCart.newUsername) return
+  if (!productID || !stateCart.newUsername) return;
 
-  const confirmed = confirm("Hapus item ini dari keranjang?");
-  if (!confirmed) return;
+  const result = await Swal.fire({
+    title: 'Hapus item?',
+    text: 'Apakah kamu yakin ingin menghapus item ini dari keranjang?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Ya, hapus',
+    cancelButtonText: 'Batal'
+  });
 
-  await deleteCartItem(stateCart.newUsername, productID)
-}
+  if (result.isConfirmed) {
+    await deleteCartItem(stateCart.newUsername, productID);
+    Swal.fire('Terhapus!', 'Item berhasil dihapus dari keranjang.', 'success');
+  }
+};
+
 
 const getProductPrice = (productId) => {
   if (!productId) return 0

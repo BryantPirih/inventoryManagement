@@ -48,6 +48,7 @@ import reportProduct from '../views/reportProduct.vue'
 import reportPerformance from '../views/reportPerformance.vue'
 import reportStockOpname from '../views/reportStockOpname.vue'
 import historySales from '../views/historySales.vue'
+import editAddressLoctaion from '@/views/editAddressLoctaion.vue'
 
 const routes = [
   {
@@ -288,6 +289,11 @@ const routes = [
     path: '/historySales',
     name: 'historySales',
     component: historySales
+  },
+  {
+    path: '/editAddress/:id',
+    name: 'editAddress',
+    component: editAddressLoctaion
   },
   {
     path: '/overviewWorker',

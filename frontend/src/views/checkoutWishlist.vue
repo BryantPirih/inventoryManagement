@@ -128,6 +128,7 @@ export default {
     document.head.appendChild(script);
 
     onBeforeMount(() => {
+      pick.value = 0;
       qty.value = sessionStorage.getItem("qty");
       stateAddress.newUsername = sessionStorage.getItem("username");
       getOneAddress(stateAddress.newUsername);

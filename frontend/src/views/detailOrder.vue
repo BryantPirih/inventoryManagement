@@ -11,7 +11,7 @@
           
           <p><strong>Pembeli:</strong> {{ stateOrder.order.data.username }}</p>
 
-          <!-- ✅ Ordered Items -->
+          
           <div v-for="(item, index) in stateOrder.order.data.items" :key="index" class="mb-3 border-start ps-3 border-2">
             <p><strong>Product ID:</strong> {{ item.productId }}</p>
             <p><strong>Product Name:</strong> {{ item.productName }}</p>
@@ -76,12 +76,6 @@
                     @click="handleConfirmDelivery">
               <i class="bi bi-geo-alt-fill me-1"></i> Sampai Tujuan
             </button>
-
-            <button v-if="stateOrder.order.data.status === 4"
-                    class="btn btn-success"
-                    @click="handleStatusChange(5)">
-              <i class="bi bi-hand-thumbs-up-fill me-1"></i> Selesaikan Pesanan
-            </button>
           </div>
         </div>
       </div>
@@ -95,7 +89,7 @@ import orderCRUD from "../modules/orderCRUD.js";
 import deliveryCRUD from "../modules/deliveryCRUD.js";
 import { onBeforeMount, ref } from "vue";
 import { useRoute } from "vue-router";
-
+import Swal from 'sweetalert2';
 export default {
   name: "detailOrder",
   components: {
@@ -109,12 +103,27 @@ export default {
 
     const handleConfirmDelivery = async () => {
       if (!receivedBy.value.trim()) {
-        alert("Mohon isi nama penerima terlebih dahulu.");
+        Swal.fire('Gagal', 'Mohon isi nama penerima terlebih dahulu.', 'error');
         return;
       }
-      const updated = await updateOrder(stateOrder.order.data.id, 4, receivedBy.value);
-      if (updated) {
-        stateOrder.order.data = updated;
+
+      const confirm = await Swal.fire({
+        title: 'Konfirmasi Pengiriman',
+        text: `Pesanan akan ditandai sebagai "Sampai di Tujuan" dan diterima oleh ${receivedBy.value}. Lanjutkan?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, konfirmasi',
+        cancelButtonText: 'Batal'
+      });
+
+      if (confirm.isConfirmed) {
+        const updated = await updateOrder(stateOrder.order.data.id, 4, receivedBy.value);
+        if (updated) {
+          stateOrder.order.data = updated;
+          Swal.fire('Berhasil', 'Status pesanan diperbarui.', 'success');
+        } else {
+          Swal.fire('Gagal', 'Terjadi kesalahan saat memperbarui status.', 'error');
+        }
       }
     };
 

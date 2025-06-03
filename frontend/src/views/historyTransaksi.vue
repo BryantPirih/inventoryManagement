@@ -79,6 +79,14 @@
                   Tandai Selesai
                 </button>
               </div>
+
+              <!-- Bayar Sekarang button for pending orders using Midtrans -->
+              <div v-if="item.status === 0 && item.paymentMethod === 1" class="text-end mt-3">
+                <button class="btn btn-sm btn-warning" @click="payNow(item.id)">
+                  <i class="bi bi-wallet2 me-1"></i> Bayar Sekarang
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
@@ -97,7 +105,7 @@
 import navBarUser from "@/components/navBarUser.vue";
 import orderCRUD from "../modules/orderCRUD.js";
 import returnCRUD from "../modules/returnCRUD.js";
-import { ref, computed, onBeforeMount } from "vue";
+import { ref, computed, onBeforeMount, onMounted } from "vue";
 
 export default {
   name: "historyTransaksi",
@@ -119,6 +127,46 @@ export default {
       "Sampai di Tujuan",
       "Selesai"
     ];
+
+    const snapPay = (token, orderId) => {
+      window.snap.pay(token, {
+        onSuccess: async function(result) {
+          try {
+            await fetch(`https://bmp-inv-be.zenbytes.id/order/updateStatusAfterPayment/${orderId}`, {
+              method: "PUT",
+            });
+            console.log("Payment Success:", result);
+            await getAllOrderUser(username); 
+          } catch (err) {
+            console.error("Failed to update order status after payment", err);
+          }
+        },
+        onPending: function(result) {
+          console.log("Payment Pending", result);
+        },
+        onError: function(result) {
+          console.log("Payment Error", result);
+        },
+        onClose: function() {
+          console.log("Snap closed without payment");
+        }
+      });
+    };
+
+    const payNow = async (orderId) => {
+    try {
+      const res = await fetch(`https://bmp-inv-be.zenbytes.id/midtrans/charge/${orderId}`);
+      const data = await res.json();
+      if (data.token) {
+        snapPay(data.token, orderId);
+      }else {
+        console.error("Token not returned:", data);
+      }
+    } catch (err) {
+      console.error("Error fetching Snap token:", err);
+    }
+  };
+
 
     const getStatusLabel = (status) => {
       return statusLabels[status + 1];
@@ -155,13 +203,20 @@ export default {
     };
 
     const markAsDone = async (orderId) => {
-      await updateOrder(orderId, 5); // mark as selesai
-      await getAllOrderUser(username); // refresh
+      await updateOrder(orderId, 5); 
+      await getAllOrderUser(username); 
     };
 
     onBeforeMount(async () => {
       await getAllOrderUser(username);
       await fetchUserReturns(username);
+    });
+
+    onMounted(() => {
+      const script = document.createElement("script");
+      script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
+      script.setAttribute("data-client-key", process.env.VUE_APP_MIDTRANS_CLIENT_KEY);
+      document.head.appendChild(script);
     });
 
     return {
@@ -176,7 +231,9 @@ export default {
       fetchUserReturns,
       getReturnStatus,
       isReturnable,
-      markAsDone
+      markAsDone,
+      snapPay,
+      payNow
     };
   }
 };

@@ -43,6 +43,7 @@
 import navBarInventory from '@/components/NavBarInventory.vue'
 import reminderCRUD from '../modules/reminderCRUD'
 import { onMounted } from 'vue'
+import Swal from 'sweetalert2'
 
 export default {
   name: "reminderView",
@@ -51,9 +52,22 @@ export default {
     const { stateReminder, getAllReminder, deleteReminder } = reminderCRUD()
 
     const handleDelete = (id) => {
-      if (confirm('Delete this reminder?')) {
-        deleteReminder(id)
-      }
+      Swal.fire({
+        title: 'Yakin ingin menghapus?',
+        text: "Reminder ini akan dihapus secara permanen.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          deleteReminder(id).then(() => {
+            Swal.fire('Berhasil!', 'Reminder telah dihapus.', 'success')
+          }).catch(() => {
+            Swal.fire('Gagal', 'Terjadi kesalahan saat menghapus.', 'error')
+          })
+        }
+      })
     }
 
     onMounted(() => {

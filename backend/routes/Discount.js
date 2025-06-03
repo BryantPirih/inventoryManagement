@@ -53,4 +53,15 @@ router.get('/get/:discountCode', async (req, res)=>{
     const oneDiscount = await Discount.findOne({discountCode : req.params.discountCode});
     res.status(201).json({data : oneDiscount})
 });
+
+router.delete('/delete/:id', async (req, res) => {
+  try {
+    await Discount.deleteOne({ id: req.params.id });
+    res.status(200).json({ message: 'Discount deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting discount:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 module.exports = router;

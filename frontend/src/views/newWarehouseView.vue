@@ -3,7 +3,7 @@
     <navBarInventory />
     <div class="container mt-4">
       <h5 class="mb-4">Create New Warehouse</h5>
-      <form @submit.prevent="newWarehouse">
+      <form @submit.prevent="validateAndSubmit">
         <div class="mb-3">
           <label for="warehouse" class="form-label">Warehouse Name</label>
           <input
@@ -64,34 +64,67 @@ import cityAndProvinceCRUD from "../modules/cityAndProvinceCRUD.js";
 import vSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 import { onBeforeMount } from "vue";
+import Swal from 'sweetalert2';
+import { useRouter } from 'vue-router';
 export default {
   name: "newWarehouse",
   components: {
     navBarInventory,
     vSelect
   },
-  setup() {
-    const { state, newWarehouse } = warehouseCRUD()
+setup() {
+    const { state, newWarehouse } = warehouseCRUD();
     const { stateCnP, getAllProvince, getAllCity } = cityAndProvinceCRUD();
+    const router = useRouter();
 
     const cityLabel = (city) => {
       if (!city || !city.city_name || !city.type) return '';
       return `${city.type} ${city.city_name}`;
-    }
+    };
+
+        const validateAndSubmit = async () => {
+      if (!state.newWRHS || !state.newProvince || !state.newCity || !state.newAddress) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Gagal',
+          text: 'Semua field wajib diisi!'
+        });
+        return;
+      }
+
+      try {
+        await newWarehouse();
+        Swal.fire({
+          icon: 'success',
+          title: 'Sukses',
+          text: 'Warehouse berhasil ditambahkan!',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          router.push('/warehouse');
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Terjadi kesalahan saat menambahkan warehouse.'
+        });
+      }
+    };
+
 
     onBeforeMount(() => {
-      getAllCity()
-      getAllProvince()
+      getAllCity();
+      getAllProvince();
     });
 
     return {
       state,
-      newWarehouse,
       stateCnP,
       getAllCity,
       getAllProvince,
       cityLabel,
-    }
+      validateAndSubmit
+    };
   }
 }
 </script>

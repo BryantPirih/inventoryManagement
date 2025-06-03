@@ -75,38 +75,97 @@
           </select>
         </div>
 
-        <button type="submit" class="btn btn-success">Simpan Produk</button>
+        <button type="button" @click="validateAndSubmit" class="btn btn-success">Simpan Produk</button>
       </form>
     </div>
   </div>
 </template>
 
 <script>
-import navBarInventory from '@/components/NavBarInventory.vue'
-import {onMounted} from 'vue'
-import productCRUD from '../modules/productCRUD.js'
-import productCategoriesCRUD from '../modules/productCategoriesCRUD.js'
-import warehouseCRUD from '../modules/warehouseCRUD.js'
+import navBarInventory from '@/components/NavBarInventory.vue';
+import { onMounted } from 'vue';
+import productCRUD from '../modules/productCRUD.js';
+import productCategoriesCRUD from '../modules/productCategoriesCRUD.js';
+import warehouseCRUD from '../modules/warehouseCRUD.js';
+import Swal from 'sweetalert2';
+import { useRouter } from 'vue-router';
 
 export default {
-    name:"newProduct",
-    components:{
-        navBarInventory,
-    },
-    setup(){
-        const {stateProduct, newProduct} = productCRUD()
-        const {statePC, getAllProductCategories} = productCategoriesCRUD()
-        const {state, getAllWarehouse} = warehouseCRUD()
+  name: "newProduct",
+  components: { navBarInventory },
+  setup() {
+    const { stateProduct, newProduct } = productCRUD();
+    const { statePC, getAllProductCategories } = productCategoriesCRUD();
+    const { state, getAllWarehouse } = warehouseCRUD();
+    const router = useRouter();
 
-        onMounted(()=>{
-            getAllProductCategories()
-            getAllWarehouse()
-        })
+    onMounted(() => {
+      getAllProductCategories();
+      getAllWarehouse();
+    });
 
-        return {statePC, getAllProductCategories, newProduct, stateProduct,state,getAllWarehouse}
-    }
-}
+    const validateAndSubmit = async () => {
+      const {
+        newNameP,
+        newStock,
+        newWarehouse,
+        newCategory,
+        newPrice,
+        newDesc,
+        newStatus
+      } = stateProduct;
+
+      // Basic validation
+      if (
+        !newNameP ||
+        !newStock ||
+        newStock < 0 ||
+        !newWarehouse ||
+        !newCategory ||
+        !newPrice ||
+        newPrice < 0 ||
+        !newDesc ||
+        !newStatus
+      ) {
+        return Swal.fire({
+          icon: 'warning',
+          title: 'Validasi Gagal',
+          text: 'Harap lengkapi semua data dengan benar.'
+        });
+      }
+
+      try {
+        const result = await newProduct(); // Assuming it returns the product object
+        await Swal.fire({
+          icon: 'success',
+          title: 'Produk Ditambahkan',
+          text: 'Silakan lanjutkan untuk mengunggah gambar produk.'
+        });
+
+        // Redirect to image upload
+        router.push(`/uploadImageProductAdmin?id=${result.id}`);
+      } catch (err) {
+        console.error("Create product failed:", err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Menyimpan',
+          text: 'Terjadi kesalahan saat menyimpan produk.'
+        });
+      }
+    };
+
+    return {
+      statePC,
+      state,
+      stateProduct,
+      getAllProductCategories,
+      getAllWarehouse,
+      validateAndSubmit
+    };
+  }
+};
 </script>
+
 <style lang="">
     
 </style>

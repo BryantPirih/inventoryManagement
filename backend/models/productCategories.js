@@ -11,7 +11,7 @@ const productCategoriesSchemas = new mongoose.Schema({
   },
   conversionRate: {
     type: Number,
-    default: 1 // e.g., for granit: 1 pack = 6 biji
+    default: 1 
   }
 });
 

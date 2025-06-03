@@ -48,15 +48,15 @@ const getAddress = () => {
         body: JSON.stringify({
           username: stateAddress.newUsername,
           fullAddress: stateAddress.fullAddress,
-          provinceID: stateAddress.province,
-          cityID: stateAddress.city,
+          provinceId: stateAddress.province,
+          cityId: stateAddress.city,
           district: stateAddress.district,
           subDistrict: stateAddress.subDistrict,
           postalCode: stateAddress.postalCode,
           recipientName: stateAddress.recipientName,
           recipientEmail: stateAddress.recipientEmail,
           recipientPhone: stateAddress.recipientPhone,
-          isDefault: 1 // non-default by default, will be updated later if needed
+          isDefault: 1 
         })
       })
     } catch (error) {
@@ -79,12 +79,59 @@ const getAddress = () => {
     }
   }
 
+  const editAddress = async (id, updatedData) => {
+  try {
+    await fetch(`https://bmp-inv-be.zenbytes.id/address/update/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(updatedData)
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const deleteAddress = async (id) => {
+  try {
+    await fetch(`https://bmp-inv-be.zenbytes.id/address/delete/${id}`, {
+      method: "DELETE"
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+const getAddressById = async (id) => {
+  try {
+    const res = await fetch(`https://bmp-inv-be.zenbytes.id/address/byId/${id}`);
+    const data = await res.json();
+    if (data?.data) {
+      Object.assign(stateAddress, {
+        ...data.data,
+        province: data.data.provinceID, 
+        city: data.data.cityID
+      });
+    }
+  } catch (err) {
+    console.log("Failed to fetch address by ID:", err);
+  }
+};
+
+
+
+
   return {
     stateAddress,
     getAllAddress,
     getOneAddress,
     newAddress,
-    updateAddress
+    updateAddress,
+    deleteAddress,
+    editAddress,
+    getAddressById
   }
 }
 

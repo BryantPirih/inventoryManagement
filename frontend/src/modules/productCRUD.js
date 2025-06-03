@@ -133,7 +133,6 @@ const getProduct =() =>{
                 method : "PUT",
                 headers: {
                     "Content-Type" : "application/json"
-                    //authtoken bisa disini
                 },
                 body: JSON.stringify({
                     updateStatus: status,

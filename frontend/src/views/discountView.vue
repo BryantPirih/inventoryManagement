@@ -24,7 +24,7 @@
               <td>{{ item.name }}</td>
               <td>{{ item.discountCode }}</td>
               <td class="text-center">
-                <button class="btn btn-sm btn-danger">Delete</button>
+                <button class="btn btn-sm btn-danger" @click="handleDelete(item.id)">Delete</button>
               </td>
             </tr>
           </tbody>
@@ -38,22 +38,41 @@
 import navBarInventory from '@/components/NavBarInventory.vue'
 import discountCRUD from '../modules/discountCRUD.js'
 import { onBeforeMount } from 'vue'
+import Swal from 'sweetalert2'
 
 export default {
   name: "discountOverview",
-  components: {
-    navBarInventory
-  },
+  components: { navBarInventory },
   setup() {
-    const { stateDiscount, getAllDiscount } = discountCRUD()
+    const { stateDiscount, getAllDiscount, deleteDiscount } = discountCRUD()
+
+    const handleDelete = (id) => {
+      Swal.fire({
+        title: 'Hapus diskon ini?',
+        text: 'Diskon tidak dapat dikembalikan setelah dihapus.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          deleteDiscount(id).then(() => {
+            Swal.fire('Berhasil', 'Diskon telah dihapus.', 'success');
+          }).catch(() => {
+            Swal.fire('Gagal', 'Terjadi kesalahan saat menghapus.', 'error');
+          });
+        }
+      });
+    }
 
     onBeforeMount(() => {
       getAllDiscount()
     })
 
-    return { stateDiscount }
+    return { stateDiscount, handleDelete }
   }
 }
+
 </script>
 
 <style scoped>

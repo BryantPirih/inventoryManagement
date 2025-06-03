@@ -9,6 +9,28 @@
         <h5 class="mb-0">Products</h5>
       </div>
 
+      <div class="mb-3">
+        <label for="searchInput" class="form-label fw-semibold">Cari Produk</label>
+        <input
+          id="searchInput"
+          v-model="searchQuery"
+          type="text"
+          class="form-control"
+          placeholder="Ketik nama produk..."
+        />
+      </div>
+
+      <!-- Category Filter -->
+      <div class="mb-3">
+        <label for="categoryFilter" class="form-label fw-semibold">Filter by Category</label>
+        <select v-model="selectedCategory" class="form-select" id="categoryFilter">
+          <option value="">Semua Kategori</option>
+          <option v-for="(item, i) in categoryOptions" :key="i" :value="item">
+            {{ item }}
+          </option>
+        </select>
+      </div>
+
       <table class="table table-bordered table-hover">
         <thead class="table-light">
           <tr>
@@ -25,11 +47,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, index) in stateProduct.product" :key="item.id || item.name">
+          <tr v-for="(item, index) in filteredProducts" :key="item.id || item.name">
             <th scope="row">{{ index + 1 }}</th>
             <td>{{ item.name }}</td>
             <td>{{ item.stock }}</td>
-            <td>{{ item.categoryId }}</td>
+            <td>{{ item.categoryName }}</td>
             <td>{{ item.unit }}</td>
             <td>{{ item.unitConversion || '-' }}</td>
             <td>Rp.{{ parseInt(item.price).toLocaleString('id') }}</td>
@@ -46,9 +68,8 @@
   </div>
 </template>
 
-  
 <script>
-import { onMounted } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import navBarInventory from '@/components/NavBarInventory.vue';
 import productCRUD from '../modules/productCRUD.js';
 import workerCRUD from '../modules/workerCRUD.js';
@@ -63,6 +84,34 @@ export default {
     const { getOneWorker, stateWorker } = workerCRUD();
 
     const username = sessionStorage.getItem("username");
+
+    const selectedCategory = ref("");
+    const searchQuery = ref("");
+
+    const categoryOptions = computed(() => {
+      const all = Array.isArray(stateProduct.product)
+        ? stateProduct.product.map(p => p.categoryName)
+        : [];
+      return [...new Set(all)].sort();
+    });
+
+    const filteredProducts = computed(() => {
+      let filtered = Array.isArray(stateProduct.product)
+        ? stateProduct.product
+        : [];
+
+      if (selectedCategory.value) {
+        filtered = filtered.filter(p => p.categoryName === selectedCategory.value);
+      }
+
+      if (searchQuery.value.trim() !== "") {
+        filtered = filtered.filter(p =>
+          p.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+        );
+      }
+
+      return filtered;
+    });
 
     const loadProductList = async () => {
       await getOneWorker(username);
@@ -79,7 +128,11 @@ export default {
     });
 
     return {
-      stateProduct
+      stateProduct,
+      selectedCategory,
+      categoryOptions,
+      filteredProducts,
+      searchQuery
     };
   }
 };

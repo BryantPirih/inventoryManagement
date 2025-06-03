@@ -13,7 +13,7 @@ require('dotenv').config();
 // Middleware
 app.use(cors({
   credentials : true,
-  origin : ['http://localhost:3000' , 'http://localhost:8080' , 'https://bmp-inv-be.zenbytes.id' , 'https://inventory.zenbytes.id']
+  origin : ['https://bmp-inv-be.zenbytes.id' , 'http://localhost:8080' , 'https://bmp-inv-be.zenbytes.id' , 'https://inventory.zenbytes.id']
 }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(cookieParser());

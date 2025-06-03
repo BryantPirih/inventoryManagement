@@ -13,7 +13,7 @@ const getUsers = () => {
     updateMessage: '',    
   });
 
-  // Get all users
+  
   const getAllUser = async () => {
     try {
       const res = await fetch("https://bmp-inv-be.zenbytes.id/user/");
@@ -24,26 +24,36 @@ const getUsers = () => {
     }
   };
 
-  // Create a new user
-  const newUser = () => {
-    const request = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: stateUser.newUsername,
-        email: stateUser.newEmail,
-        role: stateUser.newRole,
-        mobilePhone: stateUser.newMobilePhone,
-        fullName: stateUser.newFullname,
-        password: stateUser.newPassword,
-      }),
-    };
-    fetch("https://bmp-inv-be.zenbytes.id/user/new", request);
+
+const newUser = async () => {
+  const request = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      username: stateUser.newUsername,
+      email: stateUser.newEmail,
+      role: stateUser.newRole,
+      mobilePhone: stateUser.newMobilePhone,
+      fullName: stateUser.newFullname,
+      password: stateUser.newPassword,
+    }),
   };
 
-  // Get current logged-in user
+  try {
+    const res = await fetch("https://bmp-inv-be.zenbytes.id/user/new", request);
+    const data = await res.json();
+    return { status: res.status, message: data.message }; // ← FIX HERE
+  } catch (err) {
+    console.error("Error creating user:", err);
+    return { status: 500, message: 'Network error' };
+  }
+};
+
+
+
+  
   const getCurrentUser = async (username) => {
     try {
       const res = await fetch("https://bmp-inv-be.zenbytes.id/user/");
@@ -57,7 +67,7 @@ const getUsers = () => {
     }
   };
 
-  // Update profile for logged-in user
+  
   const updateCurrentUser = async (username) => {
     try {
       const res = await fetch(`https://bmp-inv-be.zenbytes.id/user/update/${username}`, {

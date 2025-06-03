@@ -42,6 +42,7 @@
 
 import loginCRUD from '../modules/loginCRUD.js'
 import axios from 'axios'
+import Swal from 'sweetalert2'
 export default {
     name:"loginView",
     setup(){
@@ -49,34 +50,44 @@ export default {
         return {stateLogin, login}
     },
     methods:{
-        async loging(){
-            try {
-                let result = await axios.post("https://bmp-inv-be.zenbytes.id/user/login",{
-                    headers : {'Content-type' : 'application/json'},
-                    credentials : 'include',
-                    input: this.stateLogin.newInput,
-                    password : this.stateLogin.passwordInput
-                });
+        async loging() {
+          const input = this.stateLogin.newInput?.trim();
+          const password = this.stateLogin.passwordInput;
 
-                if(result.status == 200){
-                    if(result.data.role == 4){
-                        sessionStorage.setItem('username',this.stateLogin.newInput)
-                        this.$router.push({name:'homeUser'})
-                    }else{
-                        sessionStorage.setItem('username',this.stateLogin.newInput)
-                        sessionStorage.setItem('role',result.data.role)
-                        this.$router.push({name:'overviewWorker'})
-                    }
-                }else{
-                    alert(result.data.message)
-                }
-            } catch (error) {
-                if (error.response.status == 401){
-                    alert('inccorect password')
-                }else{
-                    alert('credentials not found')
-                }
+          if (!input || !password) {
+            Swal.fire('Gagal', 'Username/email/nomor HP dan password harus diisi!', 'error');
+            return;
+          }
+
+          try {
+            let result = await axios.post("https://bmp-inv-be.zenbytes.id/user/login", {
+              input: input,
+              password: password
+            }, {
+              headers: { 'Content-Type': 'application/json' },
+              withCredentials: true
+            });
+
+            if (result.status === 200) {
+              sessionStorage.setItem('username', input);
+
+              if (result.data.role == 4) {
+                this.$router.push({ name: 'homeUser' });
+              } else {
+                sessionStorage.setItem('role', result.data.role);
+                this.$router.push({ name: 'overviewWorker' });
+              }
             }
+
+          } catch (error) {
+            if (error.response?.status === 401) {
+              Swal.fire('Gagal', 'Password salah.', 'error');
+            } else if (error.response?.status === 404) {
+              Swal.fire('Gagal', 'Username/email/nomor HP tidak ditemukan.', 'error');
+            } else {
+              Swal.fire('Error', 'Terjadi kesalahan server.', 'error');
+            }
+          }
         }
     }
 

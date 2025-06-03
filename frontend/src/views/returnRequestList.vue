@@ -9,7 +9,7 @@
           <tr>
             <th>No</th>
             <th>Order ID</th>
-            <th>Product ID</th>
+            <th>Product Name</th>
             <th>Username</th>
             <th>Tanggal Permintaan</th>
             <th>Status</th>
@@ -20,7 +20,7 @@
           <tr v-for="(request, index) in requests" :key="request._id">
             <td>{{ index + 1 }}</td>
             <td>{{ request.orderId }}</td>
-            <td>{{ request.productId }}</td>
+            <td>{{ request.productName }}</td>
             <td>{{ request.username }}</td>
             <td>{{ formatDate(request.requestDate) }}</td>
             <td>

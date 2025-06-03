@@ -7,12 +7,30 @@ const Warehouse = require('../models/warehouse');
 // ✅ GET all moves
 router.get('/', async (req, res) => {
   try {
-    const moves = await Move.find();
+    const { username } = req.query;
+
+    if (!username) {
+      const allMoves = await Move.find();
+      return res.status(200).json(allMoves);
+    }
+
+    const user = await Worker.findOne({ username });
+    if (!user) return res.status(403).json({ error: 'User not found' });
+
+    let moves;
+    if (user.role === 1) {
+      moves = await Move.find(); // admin/owner → see all
+    } else {
+      moves = await Move.find({ to: user.warehouseId }); // others → only moves sent to their warehouse
+    }
+
     res.status(200).json(moves);
   } catch (err) {
+    console.error("❌ Error in GET /move:", err);
     res.status(500).json({ error: 'Failed to fetch moves' });
   }
 });
+
 
 // GET /move/byWarehouse/:username
 router.get('/byWarehouseUser/:username', async (req, res) => {

@@ -25,8 +25,7 @@
             <td>{{ item.warehouse }}</td>
             <td>{{ item.address }}</td>
             <td>
-              <!-- Replace this with your delete function later -->
-              <button class="btn btn-danger btn-sm">Delete</button>
+              <button class="btn btn-danger btn-sm" @click="confirmDelete(item.id)">Delete</button>
             </td>
           </tr>
         </tbody>
@@ -36,6 +35,7 @@
 </template>
 
 <script>
+import Swal from 'sweetalert2'
 import navBarInventory from '@/components/NavBarInventory.vue'
 import { onMounted } from 'vue'
 import warehouseCRUD from '../modules/warehouseCRUD.js'
@@ -46,13 +46,37 @@ export default {
     navBarInventory
   },
   setup() {
-    const { state, getAllWarehouse } = warehouseCRUD()
+    const { state, getAllWarehouse, deleteWarehouse } = warehouseCRUD()
+
+    const confirmDelete = async (id) => {
+      const result = await Swal.fire({
+        title: 'Yakin hapus warehouse ini?',
+        text: "Data tidak bisa dikembalikan!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+      });
+
+      if (result.isConfirmed) {
+        await deleteWarehouse(id);
+        await getAllWarehouse();
+        Swal.fire('Dihapus!', 'Warehouse telah dihapus.', 'success');
+      }
+    }
 
     onMounted(() => {
       getAllWarehouse()
     })
 
-    return { state, getAllWarehouse }
+    return {
+      state,
+      getAllWarehouse,
+      confirmDelete
+    }
   }
 }
+
 </script>

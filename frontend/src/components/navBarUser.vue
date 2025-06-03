@@ -3,10 +3,13 @@
       <!-- Topbar for large screens -->
       <nav class="navbar bg-body-tertiary px-4 d-none d-lg-flex align-items-center justify-content-between">
         <!-- Brand -->
-        <router-link to="/home" class="navbar-brand me-4">Neo Grosir</router-link>
+        <router-link to="/home" class="navbar-brand me-4">
+          <img src="/logo%20neo.jpg" alt="Company Logo" style="height: 40px;" />
+        </router-link>
+
   
-        <!-- Center: Search bar -->
-        <form @submit.prevent="goToSearchPage" class="d-flex flex-grow-1 mx-4" style="max-width: 500px;" role="search">
+        <!-- Search Bar -->
+        <form @submit.prevent="goToSearchPage" class="d-flex flex-grow-1 me-4" style="max-width: 500px;" role="search">
           <input
             v-model="searchQuery"
             class="form-control me-2"
@@ -17,8 +20,7 @@
           <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
 
-  
-        <!-- Right: Icons + Logout -->
+        <!-- Right side -->
         <div class="d-flex align-items-center gap-3">
           <router-link to="/history" class="nav-link"><i class="bi bi-card-list fs-5"></i></router-link>
           <router-link to="/cart" class="nav-link"><i class="bi bi-cart fs-5"></i></router-link>
@@ -27,13 +29,18 @@
           <notificationBell />
           <router-link to="/addressLocation" class="nav-link"><i class="bi bi-geo-alt fs-5"></i></router-link>
           <router-link to="/userSettings" class="nav-link"><i class="bi bi-gear fs-5"></i></router-link>
+
+          <!-- Hi, username -->
+          <span class="text-muted small">Hi, {{ username }}</span>
+
+          <!-- Logout -->
           <button @click="logout" class="btn btn-outline-danger ms-2">Logout</button>
         </div>
       </nav>
   
       <!-- Topbar for small screens (mobile) -->
       <nav class="navbar bg-body-tertiary d-flex d-lg-none justify-content-between px-3">
-        <router-link to="/home" class="navbar-brand">Neo Grosir</router-link>
+        <img src="/logo%20neo.jpg" alt="Logo" style="height: 30px;" />
         <button class="btn btn-outline-secondary" @click="toggleSidebar">
           <i class="bi bi-list fs-4"></i>
         </button>
@@ -47,7 +54,7 @@
       >
         <div class="offcanvas-content">
           <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Neo Grosir</h5>
+            <img src="/logo%20neo.jpg" alt="Logo" style="height: 30px;" />
             <button class="btn-close" @click="toggleSidebar"></button>
           </div>
           <div class="offcanvas-body d-flex flex-column gap-3">
@@ -95,7 +102,8 @@ export default {
   data() {
     return {
       isSidebarOpen: false,
-      searchQuery: ""
+      searchQuery: "",
+      username: sessionStorage.getItem("username") || "User"
     };
   },
   methods: {

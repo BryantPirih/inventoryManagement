@@ -48,15 +48,18 @@ const getReminder = () => {
   }
 
   const deleteReminder = async (id) => {
-    try {
-      await fetch(`https://bmp-inv-be.zenbytes.id/reminder/delete/${id}`, {
-        method: "POST"
-      })
-      await getAllReminder()
-    } catch (error) {
-      console.error("Error deleting reminder:", error)
-    }
+  try {
+    await fetch(`https://bmp-inv-be.zenbytes.id/reminder/${id}`, {
+      method: "DELETE"
+    });
+    await getAllReminder();
+  } catch (error) {
+    console.error("Error deleting reminder:", error);
   }
+};
+
+
+  
 
   return {
     stateReminder,

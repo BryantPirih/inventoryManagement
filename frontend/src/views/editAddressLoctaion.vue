@@ -3,10 +3,11 @@
     <navBarUser />
 
     <div class="container my-5">
-      <h3 class="fw-bold mb-4">Isi Alamat Baru</h3>
 
+      <h3 class="fw-bold mb-4">Edit Alamat</h3>
+        {{stateAddress}}
       <div class="card shadow-sm border-0 rounded-4 p-4">
-        <form @submit.prevent="submitNewAddress">
+        <form @submit.prevent="submitEdit">
           <div class="mb-3">
             <label class="form-label">Alamat Lengkap</label>
             <input type="text" class="form-control" v-model="stateAddress.fullAddress" required />
@@ -15,22 +16,20 @@
           <div class="mb-3">
             <label class="form-label">Provinsi</label>
             <v-select
-              v-model="stateAddress.province"
-              :options="stateCnP.province"
-              label="province"
-              :reduce="prov => prov.province_id"
-              placeholder="Pilih Provinsi"
+            v-model="selectedProvince"
+            :options="stateCnP.province"
+            label="province"
+            placeholder="Pilih Provinsi"
             />
           </div>
 
           <div class="mb-3">
             <label class="form-label">Kota</label>
             <v-select
-              v-model="stateAddress.city"
-              :options="stateCnP.city"
-              :get-option-label="cityLabel"
-              :reduce="city => city.city_id"
-              placeholder="Pilih Kota"
+            v-model="selectedCity"
+            :options="stateCnP.city"
+            :get-option-label="cityLabel"
+            placeholder="Pilih Kota"
             />
           </div>
 
@@ -65,7 +64,7 @@
           </div>
 
           <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold">
-            <i class="bi bi-check-circle me-1"></i> Simpan Alamat
+            <i class="bi bi-check-circle me-1"></i> Simpan Perubahan
           </button>
         </form>
       </div>
@@ -79,97 +78,83 @@ import addressCRUD from "../modules/addressCRUD";
 import cityAndProvinceCRUD from "../modules/cityAndProvinceCRUD.js";
 import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
-import Swal from "sweetalert2";
-import { onBeforeMount } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onBeforeMount, watchEffect, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 export default {
-  name: "newAddressLocation",
+  name: "editAddressLocation",
   components: { navBarUser, vSelect },
   setup() {
+    const route = useRoute();
     const router = useRouter();
-    const { stateAddress, newAddress } = addressCRUD();
+    const { stateAddress, editAddress, getAddressById } = addressCRUD();
     const { stateCnP, getAllProvince, getAllCity } = cityAndProvinceCRUD();
+    const selectedProvince = ref(null);
+    const selectedCity = ref(null);
 
     const cityLabel = (city) => {
       if (!city || !city.city_name || !city.type) return "";
       return `${city.type} ${city.city_name}`;
     };
 
-    const submitNewAddress = async () => {
-      const {
-        fullAddress,
-        province,
-        city,
-        district,
-        subDistrict,
-        postalCode,
-        recipientName,
-        recipientEmail,
-        recipientPhone
-      } = stateAddress;
-
-      if (!fullAddress) {
-        return Swal.fire("Gagal", "Alamat lengkap belum diisi.", "warning");
-      }
-      if (!province) {
-        return Swal.fire("Gagal", "Provinsi belum dipilih.", "warning");
-      }
-      if (!city) {
-        return Swal.fire("Gagal", "Kota belum dipilih.", "warning");
-      }
-      if (!district) {
-        return Swal.fire("Gagal", "Kecamatan belum diisi.", "warning");
-      }
-      if (!subDistrict) {
-        return Swal.fire("Gagal", "Kelurahan belum diisi.", "warning");
-      }
-      if (!postalCode) {
-        return Swal.fire("Gagal", "Kode pos belum diisi.", "warning");
-      }
-      if (!recipientName) {
-        return Swal.fire("Gagal", "Nama penerima belum diisi.", "warning");
-      }
-      if (!recipientEmail) {
-        return Swal.fire("Gagal", "Email penerima belum diisi.", "warning");
-      }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(recipientEmail)) {
-        return Swal.fire("Gagal", "Format email tidak valid.", "warning");
-      }
-      if (!recipientPhone) {
-        return Swal.fire("Gagal", "Nomor telepon belum diisi.", "warning");
-      }
-      if (isNaN(recipientPhone)) {
-        return Swal.fire("Gagal", "Nomor telepon harus berupa angka.", "warning");
-      }
-
-      try {
-        await newAddress();
-        await Swal.fire("Sukses", "Alamat berhasil disimpan.", "success");
-        router.push("/addressLocation");
-      } catch (err) {
-        console.error("Error:", err);
-        Swal.fire("Error", "Terjadi kesalahan saat menyimpan alamat.", "error");
-      }
+    const submitEdit = async () => {
+      await editAddress(route.params.id, {
+        username: stateAddress.newUsername,
+        fullAddress: stateAddress.fullAddress,
+        provinceID: selectedProvince.value?.province_id,
+        cityID: selectedCity.value?.city_id,
+        district: stateAddress.district,
+        subDistrict: stateAddress.subDistrict,
+        postalCode: stateAddress.postalCode,
+        recipientName: stateAddress.recipientName,
+        recipientEmail: stateAddress.recipientEmail,
+        recipientPhone: stateAddress.recipientPhone
+      });
+      router.push("/addressLocation");
     };
 
-
-    onBeforeMount(() => {
+    onBeforeMount(async () => {
       stateAddress.newUsername = sessionStorage.getItem("username");
-      getAllProvince();
-      getAllCity();
+      await Promise.all([
+        getAllProvince(),
+        getAllCity(),
+        getAddressById(route.params.id)
+      ]);
+    });
+
+    watchEffect(() => {
+      selectedProvince.value =
+        stateCnP.province.find(
+          (p) => p.province_id == stateAddress.province || p.province_id == stateAddress.provinceID
+        ) || null;
+
+      selectedCity.value =
+        stateCnP.city.find(
+          (c) => c.city_id == stateAddress.city || c.city_id == stateAddress.cityID
+        ) || null;
+    });
+
+    watch(selectedProvince, (val) => {
+      if (val) stateAddress.provinceID = val.province_id;
+    });
+
+    watch(selectedCity, (val) => {
+      if (val) stateAddress.cityID = val.city_id;
     });
 
     return {
       stateAddress,
+      submitEdit,
       stateCnP,
-      submitNewAddress,
-      cityLabel,
+      getAddressById,
+      selectedProvince,
+      selectedCity,
+      cityLabel
     };
   },
 };
 </script>
+
 
 <style scoped>
 .v-select {

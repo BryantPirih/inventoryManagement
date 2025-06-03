@@ -69,5 +69,28 @@ router.post('/new', async (req, res) => {
   }
 });
 
+// ✅ DELETE /warehouse/:id — delete a warehouse
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const warehouse = await Warehouse.findOne({ id });
+    if (!warehouse) {
+      return res.status(404).json({ error: 'Warehouse not found' });
+    }
+
+    // Optional: protect main warehouse
+    if (warehouse.main === 0) {
+      return res.status(403).json({ error: 'Main warehouse cannot be deleted' });
+    }
+
+    await Warehouse.deleteOne({ id });
+    res.status(200).json({ message: 'Warehouse deleted successfully' });
+  } catch (err) {
+    console.error('❌ Error deleting warehouse:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 module.exports = router;

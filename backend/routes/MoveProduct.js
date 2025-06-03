@@ -102,14 +102,27 @@ router.get('/:moveId', async (req, res) => {
     if (!moveProduct) {
       return res.status(404).json({ error: 'Move product not found' });
     }
-
-    res.status(200).json({ data: moveProduct });
+    const enrichedProducts = await Promise.all(
+      (moveProduct.products || []).map(async (p) => {
+        const plain = p.toObject(); 
+        const product = await Product.findOne({ id: plain.productId });
+        return {
+          ...plain,
+          productName: product?.name || "(Produk tidak ditemukan)",
+        };
+      })
+    );
+    console.log("🧾 Enriched:", enrichedProducts);
+    res.status(200).json({
+      data: {
+        ...moveProduct._doc,
+        products: enrichedProducts
+      }
+    });
   } catch (err) {
     console.error('Error fetching moveProduct:', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-
 
 module.exports = router;

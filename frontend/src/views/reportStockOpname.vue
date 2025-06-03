@@ -5,11 +5,16 @@
     <div class="container my-5">
       <h3 class="fw-bold mb-4">Laporan Stok Opname</h3>
 
-      <!-- Date Filter -->
+      <!-- Bulan Filter -->
       <div class="row mb-3">
         <div class="col-md-3">
-          <label>Sampai Tanggal</label>
-          <input type="date" v-model="endDate" class="form-control" />
+          <label>Filter Bulan</label>
+          <select v-model="selectedMonthYear" class="form-control">
+            <option value="">-- Semua Bulan --</option>
+            <option v-for="option in monthYearOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
         </div>
         <div class="col-md-3 align-self-end">
           <button class="btn btn-primary w-100" @click="applyDateFilter">Terapkan Filter</button>
@@ -28,7 +33,7 @@
       <table class="table table-bordered table-striped">
         <thead>
           <tr>
-            <th>ID Produk</th>
+            <th>Nama Produk</th>
             <th>ID Gudang</th>
             <th>Stok Lama</th>
             <th>Stok Baru</th>
@@ -40,7 +45,7 @@
         </thead>
         <tbody>
           <tr v-for="log in filteredLogs" :key="log._id">
-            <td>{{ log.productId }}</td>
+            <td>{{ log.productName || log.productId }}</td>
             <td>{{ log.warehouseId }}</td>
             <td>{{ log.oldStock }}</td>
             <td>{{ log.newStock }}</td>
@@ -72,7 +77,7 @@ export default {
   setup() {
     const { stateStockOpname, getAllOpnameLogs } = stockOpnameCRUD();
 
-    const endDate = ref('');
+    const selectedMonthYear = ref('');
     const rawLogs = ref([]);
     const filters = ref({
       productId: '',
@@ -87,17 +92,39 @@ export default {
 
     const applyDateFilter = () => {
       const logs = stateStockOpname.logs;
-      const end = endDate.value ? new Date(endDate.value + 'T23:59:59') : null;
+      const [year, month] = selectedMonthYear.value
+        ? selectedMonthYear.value.split("-").map(Number)
+        : [null, null];
 
       rawLogs.value = logs.filter(log => {
         const date = new Date(log.opnameDate);
-        return !end || date <= end;
+        return !year || !month || (date.getFullYear() === year && date.getMonth() === month);
       });
     };
 
+    const monthYearOptions = computed(() => {
+      const uniqueMonths = new Set();
+      stateStockOpname.logs.forEach((log) => {
+        const date = new Date(log.opnameDate);
+        const key = `${date.getFullYear()}-${date.getMonth()}`;
+        uniqueMonths.add(key);
+      });
+
+      const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                          "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+      return Array.from(uniqueMonths).sort().reverse().map((key) => {
+        const [year, month] = key.split("-");
+        return {
+          value: key,
+          label: `${monthNames[parseInt(month)]} ${year}`
+        };
+      });
+    });
+
     const filteredLogs = computed(() => {
       return rawLogs.value.filter(log =>
-        (!filters.value.productId || (log.productId || '').toLowerCase().includes(filters.value.productId.toLowerCase())) &&
+        (!filters.value.productId || (log.productName || '').toLowerCase().includes(filters.value.productId.toLowerCase())) &&
         (!filters.value.warehouseId || (log.warehouseId || '').toLowerCase().includes(filters.value.warehouseId.toLowerCase())) &&
         (!filters.value.updatedBy || (log.updatedBy || '').toLowerCase().includes(filters.value.updatedBy.toLowerCase())) &&
         (!filters.value.reason || (log.reason || '').toLowerCase().includes(filters.value.reason.toLowerCase()))
@@ -110,7 +137,8 @@ export default {
     });
 
     return {
-      endDate,
+      selectedMonthYear,
+      monthYearOptions,
       filters,
       filteredLogs,
       formatDate,

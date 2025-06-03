@@ -107,6 +107,7 @@ import navBarInventory from "@/components/NavBarInventory.vue";
 import productCRUD from "../modules/productCRUD.js";
 import { onBeforeMount, ref, watch, nextTick } from "vue";
 import { useRoute } from "vue-router";
+import Swal from 'sweetalert2'
 
 export default {
   name: "editProduct",
@@ -136,54 +137,135 @@ export default {
     };
 
     const submitRestock = async () => {
-      await restockProduct(stateProduct.product.data.id, restockAmount.value);
-      restockAmount.value = 0;
-      await refreshProduct();
-      hideModal();
-    };
-
-    const handleUpdateDescription = async () => {
-      await updateDescription(
-        stateProduct.product.data.id,
-        stateProduct.newDescription
-      );
-      stateProduct.newDescription = "";
-      await refreshProduct();
-    };
-
-    const handleUpdateStatus = async () => {
-      await updateStatusProduct(
-        stateProduct.product.data.id,
-        stateProduct.product.data.status
-      );
-      await refreshProduct();
-    };
-
-    const submitConvert = async () => {
-      const max = stateProduct.product.data.stock;
-      if (convertAmount.value < 1 || convertAmount.value > max) {
-        alert(`Jumlah harus antara 1 sampai ${max}`);
-        return;
-      }
-
-      try {
-        const res = await convertUnit(
-          stateProduct.product.data.id,
-          convertAmount.value,
-          convertPrice.value // ✅ send price
-        );
-        if (res && res.message) {
-          alert("Konversi berhasil!");
-          await refreshProduct();
-          hideConvertModal();
-        } else {
-          alert(res.error || "Gagal melakukan konversi.");
+        if (!restockAmount.value || restockAmount.value <= 0) {
+          return Swal.fire({
+            icon: 'warning',
+            title: 'Validasi Gagal',
+            text: 'Jumlah restock harus lebih dari 0.'
+          });
         }
-      } catch (err) {
-        console.error("Convert Error:", err);
-        alert("Terjadi kesalahan saat konversi.");
-      }
-    };
+
+        try {
+          await restockProduct(stateProduct.product.data.id, restockAmount.value);
+          restockAmount.value = 0;
+          await refreshProduct();
+          hideModal();
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Restock Berhasil',
+            text: 'Jumlah stok telah diperbarui.'
+          });
+        } catch (err) {
+          console.error("Restock Error:", err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal Restock',
+            text: 'Terjadi kesalahan saat restock.'
+          });
+        }
+      };
+
+      const handleUpdateDescription = async () => {
+        if (!(stateProduct.newDescription || '').trim()) {
+          return Swal.fire({
+            icon: 'warning',
+            title: 'Validasi Gagal',
+            text: 'Deskripsi baru tidak boleh kosong.'
+          });
+        }
+
+        try {
+          await updateDescription(
+            stateProduct.product.data.id,
+            stateProduct.newDescription
+          );
+          stateProduct.newDescription = "";
+          await refreshProduct();
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Deskripsi Diperbarui',
+            text: 'Deskripsi produk berhasil diubah.'
+          });
+        } catch (err) {
+          console.error("Update Desc Error:", err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal Update',
+            text: 'Terjadi kesalahan saat mengubah deskripsi.'
+          });
+        }
+      };
+
+      const handleUpdateStatus = async () => {
+        try {
+          await updateStatusProduct(
+            stateProduct.product.data.id,
+            stateProduct.product.data.status
+          );
+          await refreshProduct();
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Status Diperbarui',
+            text: 'Status produk berhasil diperbarui.'
+          });
+        } catch (err) {
+          console.error("Status Update Error:", err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal Update Status',
+            text: 'Terjadi kesalahan saat update status.'
+          });
+        }
+      };
+
+      const submitConvert = async () => {
+        const max = stateProduct.product.data.stock;
+        if (!convertAmount.value || convertAmount.value < 1 || convertAmount.value > max) {
+          return Swal.fire({
+            icon: 'warning',
+            title: 'Validasi Gagal',
+            text: `Jumlah konversi harus antara 1 hingga ${max}.`
+          });
+        }
+
+        if (!convertPrice.value || convertPrice.value < 1) {
+          return Swal.fire({
+            icon: 'warning',
+            title: 'Validasi Gagal',
+            text: 'Harga hasil konversi tidak boleh kosong atau nol.'
+          });
+        }
+
+        try {
+          const res = await convertUnit(
+            stateProduct.product.data.id,
+            convertAmount.value,
+            convertPrice.value
+          );
+          if (res && res.message) {
+            await refreshProduct();
+            hideConvertModal();
+
+            Swal.fire({
+              icon: 'success',
+              title: 'Konversi Berhasil',
+              text: 'Produk berhasil dikonversi ke satuan baru.'
+            });
+          } else {
+            throw new Error(res.error || "Gagal melakukan konversi.");
+          }
+        } catch (err) {
+          console.error("Convert Error:", err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Konversi Gagal',
+            text: err.message || 'Terjadi kesalahan saat konversi.'
+          });
+        }
+      };
 
     const hideModal = () => {
       const modal = window.bootstrap.Modal.getInstance(modalRef.value);

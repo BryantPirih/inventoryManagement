@@ -3,8 +3,8 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const ReturnRequest = require("../models/returnRequest");
+const Product = require("../models/product");
 
-// Set up multer storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, path.join(__dirname, "../public/uploads/returns"));
@@ -18,7 +18,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Create new return request
 router.post("/new", upload.single("file"), async (req, res) => {
   try {
     const { orderId, productId, username, reason } = req.body;
@@ -35,7 +34,7 @@ router.post("/new", upload.single("file"), async (req, res) => {
       reason,
       mediaUrl: `/uploads/returns/${file.filename}`,
       requestDate: new Date(),
-      status: 0, // 0 = pending
+      status: 0, 
     });
 
     await newReturn.save();
@@ -46,30 +45,48 @@ router.post("/new", upload.single("file"), async (req, res) => {
   }
 });
 
-// Get all return requests
 router.get("/", async (req, res) => {
   try {
     const allReturns = await ReturnRequest.find();
-    res.status(200).json(allReturns);
+
+    const enriched = await Promise.all(
+      allReturns.map(async (r) => {
+        const product = await Product.findOne({ id: r.productId });
+        return {
+          ...r._doc,
+          productName: product?.name || "(Produk tidak ditemukan)",
+        };
+      })
+    );
+
+    res.status(200).json(enriched);
   } catch (err) {
     console.error("Error fetching return requests:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// Get one return request by ID
+
 router.get("/get/:id", async (req, res) => {
   try {
     const oneReturn = await ReturnRequest.findById(req.params.id);
     if (!oneReturn) return res.status(404).json({ message: "Return request not found" });
-    res.status(200).json(oneReturn);
+
+    const product = await Product.findOne({ id: oneReturn.productId });
+
+    const enriched = {
+      ...oneReturn._doc,
+      productName: product?.name || "(Produk tidak ditemukan)",
+    };
+
+    res.status(200).json(enriched);
   } catch (err) {
     console.error("Error fetching return request:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// Update return request status and optional adminNote
+
 router.put("/status/:id", async (req, res) => {
   try {
     const { status, adminNote } = req.body;
@@ -91,16 +108,27 @@ router.put("/status/:id", async (req, res) => {
   }
 });
 
-// Get all return requests for a specific user
 router.get("/user/:username", async (req, res) => {
   try {
     const userReturns = await ReturnRequest.find({ username: req.params.username });
-    res.status(200).json(userReturns);
+
+    const enriched = await Promise.all(
+      userReturns.map(async (r) => {
+        const product = await Product.findOne({ id: r.productId });
+        return {
+          ...r._doc,
+          productName: product ? product.name : "(Produk tidak ditemukan)"
+        };
+      })
+    );
+
+    res.status(200).json(enriched);
   } catch (err) {
-    console.error("❌ Gagal mengambil data retur user:", err);
+    console.error("Gagal mengambil data retur user:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 
 
