@@ -6,29 +6,36 @@
       <h2 class="mb-4">Active Sales Orders</h2>
 
         <div class="mb-3">
-        <div class="row g-2">
-          <div class="col-6 col-md-3">
-            <button class="btn btn-outline-secondary w-100" @click="selectedStatus = null">
-              Semua
-            </button>
-          </div>
-          <div class="col-6 col-md-3">
-            <button class="btn btn-outline-dark w-100" @click="selectedStatus = 0">
-              Menunggu Pembayaran
-            </button>
-          </div>
-          <div class="col-6 col-md-3">
-            <button class="btn btn-outline-warning w-100" @click="selectedStatus = 1">
-              Menunggu Konfirmasi
-            </button>
-          </div>
-          <div class="col-6 col-md-3">
-            <button class="btn btn-outline-info w-100" @click="selectedStatus = 3">
-              Sedang Dikirim
-            </button>
+          <div class="row g-2">
+            <div class="col">
+              <button class="btn btn-outline-secondary w-100" @click="selectedStatus = null">
+                Semua
+              </button>
+            </div>
+            <div class="col">
+              <button class="btn btn-outline-dark w-100" @click="selectedStatus = 0">
+                Menunggu Pembayaran
+              </button>
+            </div>
+            <div class="col">
+              <button class="btn btn-outline-warning w-100" @click="selectedStatus = 1">
+                Menunggu Konfirmasi
+              </button>
+            </div>
+            <div class="col">
+              <button class="btn btn-outline-primary w-100" @click="selectedStatus = 2">
+                Sedang Diproses
+              </button>
+            </div>
+            <div class="col">
+              <button class="btn btn-outline-info w-100" @click="selectedStatus = 3">
+                Sedang Dikirim
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+
+
       
       <div v-if="stateOrder.order && stateOrder.order.length > 0">
         <div class="table-responsive">
