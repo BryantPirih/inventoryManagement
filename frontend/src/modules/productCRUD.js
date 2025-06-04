@@ -42,19 +42,21 @@ const getProduct =() =>{
 
 
     const convertUnit = async (id, amount, price) => {
+        const username = sessionStorage.getItem("username");
         try {
             const request = {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ amount, price }) // ✅ send both
+            body: JSON.stringify({ amount, price })
             };
-            const res = await fetch("https://bmp-inv-be.zenbytes.id/product/convertUnit/" + id, request);
+            const res = await fetch(`https://bmp-inv-be.zenbytes.id/product/convertByUser/${id}?username=${username}`, request);
             const data = await res.json();
             return data;
         } catch (error) {
             console.log("Error converting unit:", error);
         }
     };
+
 
     const getAllProductMainWarehouse = async () =>{
         try {
@@ -127,49 +129,59 @@ const getProduct =() =>{
     };
 
 
-    const updateStatusProduct = async (id,status) =>{
+    const updateStatusProduct = async (id, status) => {
+        const username = sessionStorage.getItem("username");
         try {
             const request = {
-                method : "PUT",
-                headers: {
-                    "Content-Type" : "application/json"
-                },
-                body: JSON.stringify({
-                    updateStatus: status,
-                })
-            }
-            fetch("https://bmp-inv-be.zenbytes.id/product/updateStatusProduct/"+id,
-            request
-            )
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ updateStatus: status })
+            };
+            await fetch(`https://bmp-inv-be.zenbytes.id/product/updateStatusByUser/${id}?username=${username}`, request);
         } catch (error) {
-            console.log(error)
+            console.log("Error updating status:", error);
         }
-    }
+    };
+
     const restockProduct = async (id, stock) => {
+        const username = sessionStorage.getItem("username");
         try {
             const request = {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ stock })
             };
-            await fetch(`https://bmp-inv-be.zenbytes.id/product/restock/${id}`, request);
+            await fetch(`https://bmp-inv-be.zenbytes.id/product/restockByUser/${id}?username=${username}`, request);
         } catch (error) {
             console.log("Error during restock:", error);
         }
     };
 
-        const updateDescription = async (id, description) => {
+
+    const updateDescription = async (id, description) => {
+        const username = sessionStorage.getItem("username");
         try {
             const request = {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ description })
             };
-            await fetch(`https://bmp-inv-be.zenbytes.id/product/updateDescription/${id}`, request);
+            await fetch(`https://bmp-inv-be.zenbytes.id/product/updateDescByUser/${id}?username=${username}`, request);
         } catch (error) {
             console.log("Error updating description:", error);
         }
     };
+
+    const getProductByIdAndUser = async (id, username) => {
+        try {
+            const res = await fetch(`https://bmp-inv-be.zenbytes.id/product/getByIdAndUser?id=${id}&username=${username}`);
+            const data = await res.json();
+            stateProduct.product = data;
+        } catch (error) {
+            console.error("Error fetching product by ID and username:", error);
+        }
+    };
+
 
 
     return {
@@ -184,7 +196,8 @@ const getProduct =() =>{
         getAllProductMainWarehouse,
         getOneProductMainWarehouse,
         convertUnit,
-        updateStatusProduct
+        updateStatusProduct,
+        getProductByIdAndUser
     };
 }
 

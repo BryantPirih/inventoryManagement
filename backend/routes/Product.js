@@ -5,13 +5,12 @@ const Warehouse = require('../models/warehouse');
 const multer = require('multer');
 const path = require('path');
 const ProductCategories = require('../models/productCategories');
-
+const Worker = require('../models/worker');
 
 const getOneProductCategories = async (category) => { 
     const oneProductCategories = await ProductCategories.findOne({id : category});
     return oneProductCategories
 }
-
 
 router.get('/', async (req, res)=>{
   const products = await Product.find();
@@ -48,17 +47,25 @@ router.get('/getAllProductMainWarehouse', async (req, res)=>{
 });
 
 // 🔁 POST /product/convertUnit
-router.put('/convertUnit/:id', async (req, res) => {
+router.put('/convertByUser/:id', async (req, res) => {
   const { id } = req.params;
   const { amount, price } = req.body;
+  const { username } = req.query;
 
   if (!amount || amount < 1) {
     return res.status(400).json({ error: 'Invalid amount to convert' });
   }
 
   try {
-    const product = await Product.findOne({ id });
-    if (!product) return res.status(404).json({ error: 'Product not found' });
+    // Step 1: Get warehouse via worker
+    const worker = await Worker.findOne({ username });
+    if (!worker || !worker.warehouseId) {
+      return res.status(404).json({ error: 'Worker not found or no warehouse assigned' });
+    }
+
+    // Step 2: Get the correct product
+    const product = await Product.findOne({ id, warehouseId: worker.warehouseId });
+    if (!product) return res.status(404).json({ error: 'Product not found for this worker' });
 
     const category = await ProductCategories.findOne({ id: product.categoryId });
     if (!category || category.unitConversion === "-" || !category.conversionRate) {
@@ -69,12 +76,12 @@ router.put('/convertUnit/:id', async (req, res) => {
       return res.status(400).json({ error: 'Not enough stock to convert' });
     }
 
-    // Update original stock
+    // Step 3: Convert
     product.stock -= amount;
     await product.save();
 
     const convertedId = `${product.id}-${category.unitConversion.toLowerCase()}`;
-    const convertedName = `${product.name} - ${category.unitConversion}`; // ✅ updated name
+    const convertedName = `${product.name} - ${category.unitConversion}`;
     const convertedQty = amount * parseInt(category.conversionRate);
     const calculatedPrice = Math.floor(product.price / parseInt(category.conversionRate));
 
@@ -90,7 +97,7 @@ router.put('/convertUnit/:id', async (req, res) => {
     } else {
       const newProduct = new Product({
         id: convertedId,
-        name: convertedName, // ✅ use converted name
+        name: convertedName,
         stock: convertedQty,
         categoryId: product.categoryId,
         unit: category.unitConversion,
@@ -113,6 +120,7 @@ router.put('/convertUnit/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 router.post('/new', async (req, res) => {
   try {
@@ -196,71 +204,98 @@ router.get('/getOneProductMainWarehouse/:id', async (req, res)=>{
     res.status(201).json({data : oneProduct})
 });
 
-router.put('/updateStatusProduct/:id', async (req, res)=>{
-    const  {id}  = req.params; 
-    const {updateStatus} = req.body; 
-    let newStatus = 0;
+router.put('/updateStatusByUser/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { updateStatus } = req.body;
+    const { username } = req.query;
 
-    console.log(id)
-    console.log(updateStatus)
-
-    if(updateStatus == 1 ){
-        newStatus = 0;
-    }
-    else{
-        newStatus = 1;
+    // Get warehouse from worker
+    const worker = await Worker.findOne({ username });
+    if (!worker || !worker.warehouseId) {
+      return res.status(404).json({ error: 'Worker not found or has no warehouse' });
     }
 
-    const updateStatusProduct = await Product.findOneAndUpdate(
-        {id: id},           
-        { $set: {status : newStatus} },
-        { new: true }
+    // Flip status
+    const newStatus = updateStatus == 1 ? 0 : 1;
+
+    const updated = await Product.findOneAndUpdate(
+      { id, warehouseId: worker.warehouseId },
+      { $set: { status: newStatus } },
+      { new: true }
     );
 
-    res.status(200).json(updateStatusProduct);
+    if (!updated) {
+      return res.status(404).json({ error: 'Product not found for this worker' });
+    }
+
+    res.status(200).json(updated);
+  } catch (err) {
+    console.error('Error updating status:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-router.put('/restock/:id', async (req, res) => {
+router.put('/restockByUser/:id', async (req, res) => {
   const { id } = req.params;
   const { stock } = req.body;
+  const { username } = req.query;
 
   try {
-    const product = await Product.findOne({ id });
+    // Step 1: Find worker
+    const worker = await Worker.findOne({ username });
+    if (!worker || !worker.warehouseId) {
+      return res.status(404).json({ message: "Worker not found or no warehouse assigned" });
+    }
 
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    // Step 2: Find correct product
+    const product = await Product.findOne({ id, warehouseId: worker.warehouseId });
+    if (!product) return res.status(404).json({ message: "Product not found for this worker" });
 
     const newStock = product.stock + parseInt(stock);
 
     const updated = await Product.findOneAndUpdate(
-      { id },
+      { id, warehouseId: worker.warehouseId },
       { $set: { stock: newStock } },
       { new: true }
     );
 
     res.status(200).json(updated);
   } catch (err) {
+    console.error("Restock error:", err);
     res.status(500).json({ message: "Error updating stock", error: err });
   }
 });
 
-router.put('/updateDescription/:id', async (req, res) => {
+
+router.put('/updateDescByUser/:id', async (req, res) => {
   const { id } = req.params;
   const { description } = req.body;
+  const { username } = req.query;
 
   try {
+    // Step 1: Get warehouse via worker
+    const worker = await Worker.findOne({ username });
+    if (!worker || !worker.warehouseId) {
+      return res.status(404).json({ message: "Worker not found or no warehouse assigned" });
+    }
+
+    // Step 2: Update description scoped to warehouse
     const updated = await Product.findOneAndUpdate(
-      { id },
+      { id, warehouseId: worker.warehouseId },
       { $set: { description } },
       { new: true }
     );
 
-    if (!updated) return res.status(404).json({ message: "Product not found" });
+    if (!updated) return res.status(404).json({ message: "Product not found for this worker" });
 
     res.status(200).json(updated);
   } catch (err) {
+    console.error("Update description error:", err);
     res.status(500).json({ message: "Error updating description", error: err });
   }
 });
+
 
 
 
@@ -300,7 +335,26 @@ router.post('/upload-image', upload.single('image'), async (req, res) => {
   }
 });
 
+router.get('/getByIdAndUser', async (req, res) => {
+  try {
+    const { id, username } = req.query;
+    console.log("masuk get by id and user")
+    const worker = await Worker.findOne({ username });
+    if (!worker || !worker.warehouseId) {
+      return res.status(404).json({ error: 'Worker not found or has no assigned warehouse' });
+    }
 
+    const product = await Product.findOne({ id, warehouseId: worker.warehouseId });
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found in user\'s warehouse' });
+    }
+
+    res.status(200).json({ data: product });
+  } catch (err) {
+    console.error("Error in getByIdAndUser:", err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
 module.exports = router;

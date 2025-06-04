@@ -115,7 +115,7 @@ export default {
   setup() {
     const {
       stateProduct,
-      getOneProduct,
+      getProductByIdAndUser,
       restockProduct,
       updateStatusProduct,
       updateDescription,
@@ -133,8 +133,11 @@ export default {
     const isConvertible = ref(false);
 
     const refreshProduct = async () => {
-      await getOneProduct(route.params.id);
+      const id = route.params.id;
+      const username = sessionStorage.getItem("username");
+      await getProductByIdAndUser(id, username);
     };
+
 
     const submitRestock = async () => {
         if (!restockAmount.value || restockAmount.value <= 0) {

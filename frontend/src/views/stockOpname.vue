@@ -68,6 +68,7 @@ import productCRUD from '../modules/productCRUD.js'
 import warehouseCRUD from '../modules/warehouseCRUD.js'
 import workerCRUD from '../modules/workerCRUD.js'
 import { onMounted, computed, ref } from 'vue'
+import Swal from 'sweetalert2'; // ⬅ add at the top
 
 export default {
   name: "stockOpname",
@@ -105,15 +106,25 @@ export default {
             data: stateProduct.product,
             user: sessionStorage.getItem('username'),
           }),
-        })
+        });
 
-        if (!response.ok) throw new Error("Failed to save data")
-        alert("Data berhasil disimpan!")
+        if (!response.ok) throw new Error("Failed to save data");
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil',
+          text: 'Data stock opname berhasil disimpan.'
+        });
       } catch (error) {
-        console.error("Error saving table data:", error)
-        alert("Terjadi kesalahan saat menyimpan data.")
+        console.error("Error saving table data:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: 'Terjadi kesalahan saat menyimpan data.'
+        });
       }
-    }
+    };
+
 
     onMounted(async () => {
       const username = sessionStorage.getItem("username")

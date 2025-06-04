@@ -5,7 +5,7 @@
     <div class="container mt-4">
       <h3 class="fw-bold mb-4">Add New Worker</h3>
 
-      <form @submit.prevent="newWorker">
+      <form @submit.prevent="handleNewWorker">
         <div class="mb-3">
           <label for="username" class="form-label">Username</label>
           <input
@@ -106,6 +106,8 @@ import navBarInventory from '@/components/NavBarInventory.vue'
 import {onMounted} from 'vue'
 import warehouseCRUD from '../modules/warehouseCRUD.js'
 import workerCRUD from '../modules/workerCRUD.js'
+import Swal from 'sweetalert2';
+import { useRouter } from 'vue-router';
 
 export default {
     name:"newWorker",
@@ -116,11 +118,70 @@ export default {
         const {state, getAllWarehouse} = warehouseCRUD()
         const {stateWorker, newWorker} = workerCRUD()
 
+        const router = useRouter();
+
+        const handleNewWorker = async () => {
+          const {
+            newUsername,
+            newName,
+            newEmail,
+            newRole,
+            newMobilephone,
+            newWarehouseId,
+            newPassword
+          } = stateWorker;
+
+          // Basic field validation
+          if (
+            !newUsername ||
+            !newName ||
+            !newEmail ||
+            !newRole ||
+            !newMobilephone ||
+            !newWarehouseId ||
+            !newPassword
+          ) {
+            return Swal.fire({
+              icon: 'warning',
+              title: 'Validasi Gagal',
+              text: 'Semua field wajib diisi.'
+            });
+          }
+
+          // Email format validation
+          const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailPattern.test(newEmail)) {
+            return Swal.fire({
+              icon: 'warning',
+              title: 'Email Tidak Valid',
+              text: 'Masukkan email dengan format yang benar.'
+            });
+          }
+
+          try {
+            await newWorker(); // original backend call
+            Swal.fire({
+              icon: 'success',
+              title: 'Berhasil',
+              text: 'Pekerja baru berhasil ditambahkan.'
+            }).then(() => {
+              router.push('/worker');
+            });
+          } catch (err) {
+            console.error("Error creating worker:", err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Gagal',
+              text: 'Terjadi kesalahan saat membuat pekerja.'
+            });
+          }
+        };
+
         onMounted(()=>{
             getAllWarehouse()
         })
 
-        return {state, getAllWarehouse, newWorker, stateWorker}
+        return {state, getAllWarehouse, newWorker, stateWorker,handleNewWorker}
     }
 }
 </script>
